@@ -155,7 +155,7 @@ func centerCentroid(c []interface{}, l int) {
 }
 
 // FIXME TESTME
-func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) {
+func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) error {
 	// Maps number of elements that belongs to a centroid.
 	eleMap := map[int]int{}
 	for _, p := range dataMap {
@@ -169,7 +169,11 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) {
 		zeroCentroid(centroids[k])
 	}
 	for i, p := range dataMap {
-		incrementCentroid(centroids[p.K], data.Row(i))
+		row, err := data.Row(i)
+		if err != nil {
+			return err
+		}
+		incrementCentroid(centroids[p.K], row)
 	}
 	for k := 0; k < len(centroids); k++ {
 		if eleMap[k] == 0 {
@@ -177,6 +181,7 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) {
 		}
 		centerCentroid(centroids[k], eleMap[k])
 	}
+	return nil
 }
 
 // Kmc computes k means clustering.
@@ -193,7 +198,12 @@ func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 		dataMap[i].Distance = 1
 	}
 	centroids := make([][]interface{}, 0)
-	centroids, er = createRandomCentroids(k, data.Row(0))
+	row, er := data.Row(0)
+	if er != nil {
+		return
+
+	}
+	centroids, er = createRandomCentroids(k, row)
 	if er != nil {
 		return
 	}
@@ -201,7 +211,11 @@ func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 	for {
 		changed = false
 		for i := 0; i < data.Len(); i++ {
-			e := data.Row(i)
+			e, err := data.Row(i)
+			if err != nil {
+				er = err
+				return
+			}
 			for j := 0; j < k; j++ {
 				var d float64
 				d, er = distance(e, centroids[j], nil)
@@ -218,6 +232,7 @@ func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 		if !changed {
 			break
 		}
+		// FIXME check error
 		moveCentroids(centroids, dataMap, data)
 		stracer.Traceln("centroids moved", centroids)
 	}

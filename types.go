@@ -15,6 +15,8 @@ import (
 // unrecognized type.
 var UnknownType error = errors.New("unknown type")
 
+var NoRow error = errors.New("no row with that index")
+
 type Point struct {
 	// The index of centroid to which point belongs.
 	K int
@@ -102,7 +104,7 @@ type Table interface {
 	// Returns total elements.
 	Len() int
 	// Returns i-th row.
-	Row(i int) []interface{}
+	Row(i int) ([]interface{}, error)
 	// Maybe usefull it future:
 	// for d.Next {d.Row()}
 	//Row() []interface{}
@@ -111,5 +113,11 @@ type Table interface {
 
 type memoryTable [][]interface{}
 
-func (t memoryTable) Len() int                { return len(t) }
-func (t memoryTable) Row(i int) []interface{} { return t[i] }
+func (t memoryTable) Len() int { return len(t) }
+func (t memoryTable) Row(i int) ([]interface{}, error) {
+	if i > len(t)-1 {
+		return nil, NoRow
+	}
+	e := t[i]
+	return e, nil
+}
