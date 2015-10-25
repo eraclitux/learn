@@ -37,7 +37,7 @@ func TestLoadCSV(t *testing.T) {
 
 func TestNormalize(t *testing.T) {
 	// [0.2306153846153846 1 1000] [0 0.7777777777777778 0100] [1 0 0001]
-	expected := [][]interface{}{
+	var expected memoryTable = [][]interface{}{
 		[]interface{}{
 			float64(0.2306153846153846),
 			float64(1),
