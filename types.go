@@ -15,6 +15,9 @@ import (
 // unrecognized type.
 var UnknownType error = errors.New("unknown type")
 
+// NoRow error should be returned in Table's Row
+// in case of problems retrieving data from underlying
+// storage.
 var NoRow error = errors.New("no row with that index")
 
 type Point struct {
@@ -25,6 +28,8 @@ type Point struct {
 }
 
 // Category models a categorical (aka nominal es choices A,B etc) feature.
+// Choices must be translated to the form:
+//	"[1,0,1]"
 type Category struct {
 	data     uint
 	choicesN uint
@@ -105,6 +110,7 @@ type Table interface {
 	Len() int
 	// Returns i-th row.
 	Row(i int) ([]interface{}, error)
+	//Headers() []string
 	// Maybe usefull it future:
 	// for d.Next {d.Row()}
 	//Row() []interface{}

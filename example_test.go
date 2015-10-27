@@ -16,7 +16,7 @@ func ExampleKmc() {
 	if er != nil {
 		return
 	}
-	// Load all data in memory.
+	// NOTE this loads all data in memory.
 	data, er := sml.Normalize(rC)
 	if er != nil {
 		return

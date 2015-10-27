@@ -175,7 +175,7 @@ func TestCreateRandomCentroids(t *testing.T) {
 }
 
 func TestKmc(t *testing.T) {
-	rC, er := LoadCSV("datasets/iris_nolabels.csv")
+	rC, er := LoadCSV("datasets/iris.csv")
 	if er != nil {
 		return
 	}
@@ -184,7 +184,7 @@ func TestKmc(t *testing.T) {
 	if er != nil {
 		return
 	}
-	r, err := Kmc(data, 4, nil)
+	r, err := Kmc(data, 3, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

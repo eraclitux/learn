@@ -1,5 +1,8 @@
 =======================
 Simple Machine Learning
 =======================
+Minimal Machine Learning
 
-This package mplements basic machine learning algorithms.
+This package exposes basic machine learning algorithms.
+
+Tools...

@@ -21,6 +21,7 @@ const (
 	_ FeatureType = iota
 	Cat
 	Float
+	Str
 )
 
 // csvClosable implements ReadCloser
@@ -34,12 +35,17 @@ var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
 // kind tries to identify data type
 // from string for parsing in Go type.
 func kind(s string) FeatureType {
+	// FIXME to not recall converiosn methods
+	// in the caller. Return also converted values.
 	if checkerRgxp.MatchString(s) {
 		stracer.Traceln("clenerRgxp matched:", s)
 		return Cat
 	}
-	// FIXME check if it is a float
-	return Float
+	_, err := strconv.ParseFloat(s, 64)
+	if err == nil {
+		return Float
+	}
+	return Str
 }
 
 func cleanStrings(row []string) {
@@ -112,7 +118,7 @@ func Normalize(dataReadCloser ReadCloser) (Table, error) {
 			case Float:
 				f, err := strconv.ParseFloat(e, 64)
 				if err != nil {
-					panic(err)
+					return nil, err
 				}
 				iRow[i] = f
 				if f > maxs[i].(float64) {
@@ -122,6 +128,8 @@ func Normalize(dataReadCloser ReadCloser) (Table, error) {
 				}
 			case Cat:
 				iRow[i] = newCategory(e)
+			case Str:
+				iRow[i] = e
 			default:
 				panic("unknown type normalizing data")
 

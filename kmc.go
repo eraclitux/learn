@@ -2,13 +2,31 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-// Package sml exposes some machine learning alghoritms.
+// Package mml exposes some machine learning alghoritms, in a minimalistic way.
 //
-// Unsupervised learning:
+// It tries to be as idiomatic as possible. Interfaces are used in public APIs when possible
+// to make methods easily adaptable to custom needs.
+// Table interface should makes easily to use storage other than memory
+// when dealing with "Big Data" (database, filesystem etc..)
+//
+// CLustering:
 //
 //	- k means clustering
 //
+// Classification:
+//
+//	- kNN
+//
 // K means clustering
+//
+// Categorical and numeriacl features are supported.
+//
+// Method for Distance calculation is automatically
+// choosed at runtime:
+//
+// - manhattan for numerical features
+//
+// - humming distance for categorical features
 //
 // Example of data
 //
@@ -16,7 +34,7 @@
 //	12,	"A,C",		5,	15.10
 //	1,	"D"		1,	1
 //
-// Categorical features are supported. They must be translated to an array of 0 and 1:
+// Categorical features must be translated to an array of 0 and 1:
 //
 //	Hours	Choices		Stars	Price
 //	12,	"[1,0,1,0]",	5,	15.10
@@ -51,10 +69,11 @@ func manhattan(a, b float64) float64 {
 	return d
 }
 
-// elementsDistance returns distance for two elelemnt of same type
+// elementsDistance returns distance for two elements of same type
 // (quantitative, nominal, cardinal, binary).
 // Returning value is ∈ [0,1].
 func elementsDistance(a1, a2 interface{}) (d float64, er error) {
+	// TODO add Geo type of lat/long with distance (http://www.movable-type.co.uk/scripts/latlong.html)
 	switch a1.(type) {
 	case float64:
 		return manhattan(a1.(float64), a2.(float64)), nil
@@ -72,6 +91,10 @@ func elementsDistance(a1, a2 interface{}) (d float64, er error) {
 func distance(s, v []interface{}, weights []float64) (float64, error) {
 	var total float64
 	for i, e := range s {
+		// Ignore string features.
+		if _, ok := e.(string); ok {
+			continue
+		}
 		t, err := elementsDistance(e, v[i])
 		if err != nil {
 			return -1, err
@@ -104,6 +127,8 @@ func createRandomCentroids(k int, s []interface{}) ([][]interface{}, error) {
 				c[i] = rand.Float64()
 			case *Category:
 				c[i] = createRandCategory(e.(*Category).choicesN)
+			case string:
+				c[i] = ""
 			default:
 				return nil, UnknownType
 			}
@@ -120,6 +145,8 @@ func zeroCentroid(c []interface{}) {
 			c[i] = float64(0)
 		case *Category:
 			c[i].(*Category).zero()
+		case string:
+			// do nothing for string features.
 		default:
 			panic("unknown type zeroing centroid")
 		}
@@ -135,6 +162,8 @@ func incrementCentroid(c []interface{}, d []interface{}) {
 			c[i] = e.(float64) + d[i].(float64)
 		case *Category:
 			e.(*Category).add(d[i].(*Category))
+		case string:
+			// do nothing for string features.
 		default:
 			panic("unknown type incremententing centroid")
 		}
@@ -148,8 +177,10 @@ func centerCentroid(c []interface{}, l int) {
 			c[i] = e.(float64) / float64(l)
 		case *Category:
 			e.(*Category).mean(l)
+		case string:
+			// do nothing for string features.
 		default:
-			panic("unknown type zeroing centroid")
+			panic("unknown type centering centroid")
 		}
 	}
 }
@@ -190,6 +221,7 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) error
 func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 	// FIXME randomly centroids with zero elemtns are created which take to higher SSE.
 	// FIXME check for unnormalized data!
+
 	// This assigns all elements to centroid 0 as default.
 	result = &KmcResult{}
 	dataMap := make([]Point, data.Len())
@@ -232,8 +264,11 @@ func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 		if !changed {
 			break
 		}
-		// FIXME check error
-		moveCentroids(centroids, dataMap, data)
+		err := moveCentroids(centroids, dataMap, data)
+		if err != nil {
+			err = err
+			return
+		}
 		stracer.Traceln("centroids moved", centroids)
 	}
 	for _, p := range dataMap {
