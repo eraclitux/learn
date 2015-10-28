@@ -39,6 +39,10 @@ func elementsDistance(a1, a2 interface{}) (d float64, er error) {
 // FIXME check that ∈ of weights are <=1
 func distance(s, v []interface{}, weights []float64) (float64, error) {
 	var total float64
+	// Some feature are ignored (es string)
+	// we cannot use len(s) to calculate the average.
+	var numFeatures float64
+
 	for i, e := range s {
 		// Ignore string features.
 		if _, ok := e.(string); ok {
@@ -53,6 +57,7 @@ func distance(s, v []interface{}, weights []float64) (float64, error) {
 		} else {
 			total += t * weights[i]
 		}
+		numFeatures++
 	}
-	return total / float64(len(s)), nil
+	return total / numFeatures, nil
 }
