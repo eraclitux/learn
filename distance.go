@@ -1,4 +1,4 @@
-package sml
+package nml
 
 func hummingD(a, b uint) uint {
 	var dist uint

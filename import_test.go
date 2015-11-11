@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package sml
+package nml
 
 import (
 	"encoding/csv"
@@ -20,7 +20,7 @@ var dataCSV = []byte(
 	400.4, -67,"[0,0,0,1]"`)
 
 func TestLoadCSV(t *testing.T) {
-	tempPath := os.TempDir() + "/sml_test.csv"
+	tempPath := os.TempDir() + "/nml_test.csv"
 	err := ioutil.WriteFile(tempPath, dataCSV, 0644)
 	if err != nil {
 		t.Fatal(err)

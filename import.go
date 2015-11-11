@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package sml
+package nml
 
 import (
 	"encoding/csv"
@@ -63,7 +63,7 @@ func cleanStrings(row []string) {
 //
 // Every value (quantitative, nominal, cardinal, binary)
 // is transformed to appropriate scalar/Category
-// with elements ∈ [0,1].
+// with elements ∈ {0,1}.
 //
 // Example of normalized data:
 //
