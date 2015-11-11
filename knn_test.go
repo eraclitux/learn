@@ -5,6 +5,7 @@
 package sml
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -87,5 +88,12 @@ func TestKNNClassifier_Predict(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Fatal(prediction)
+	cM, err := ConfusionMatrix(trainData, prediction)
+	if testing.Verbose() {
+		fmt.Println(cM)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Fatal("test precision")
 }

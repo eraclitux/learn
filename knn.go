@@ -4,8 +4,6 @@
 
 package sml
 
-import "github.com/eraclitux/stracer"
-
 type Classifier interface {
 	// Predict returns a Table
 	// which stores predicted labels
@@ -13,11 +11,6 @@ type Classifier interface {
 	Predict(Table) (Table, error)
 	//Fit()
 	//CrossValidation()
-}
-
-type ValidationReport struct {
-	Recal float64
-	Prior float64
 }
 
 type kNNClassifier struct {
@@ -66,7 +59,6 @@ func (t kSamples) checkUpdate(d float64, row []interface{}) {
 // getNearest return the clasified label for
 // given slice of k samples.
 func (t kSamples) getNearest() string {
-	stracer.Traceln("k samples:", t)
 	m := make(map[string]int)
 	for _, e := range t {
 		// get label as last column in row.
@@ -79,7 +71,6 @@ func (t kSamples) getNearest() string {
 	}
 	max := 0
 	label := ""
-	stracer.Traceln("calulated nearest map:", m)
 	for k, v := range m {
 		// empty string is used to initialize k samples.
 		if v > max && k != "" {

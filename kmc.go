@@ -5,11 +5,11 @@
 // Package mml exposes some machine learning alghoritms, in a minimalistic way.
 //
 // It tries to be as idiomatic as possible. Interfaces are used in public APIs when possible
-// to make methods easily adaptable to custom needs.
-// Table interface should makes easily to use storage other than memory
+// to make methods adaptable to custom needs.
+// Table interface should makes (hopefully) easy to use storage other than memory
 // when dealing with "Big Data" (database, filesystem etc..)
 //
-// CLustering:
+// Clustering:
 //
 //	- k means clustering
 //
