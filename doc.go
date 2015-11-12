@@ -2,12 +2,16 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-// Package nml exposes some machine learning alghoritms implemented in a naive way.
+// Package nml exposes some machine learning alghoritms with a focus on practical use.
 //
 // It tries to be as idiomatic as possible. Interfaces are used in public APIs when possible
 // to make methods adaptable to custom needs.
 // Table interface should makes (hopefully) easy to use storage other than memory
 // when dealing with "Big Data" (database, filesystem etc..)
+//
+// Regression:
+//
+//	- linear regression
 //
 // Clustering:
 //
