@@ -13,15 +13,16 @@ import (
 	"strconv"
 
 	"github.com/eraclitux/stracer"
+	"github.com/eraclitux/trace"
 )
 
-type FeatureType uint8
+type featureType uint8
 
 const (
-	_ FeatureType = iota
-	Cat
-	Float
-	Str
+	_ featureType = iota
+	cat
+	float
+	str
 )
 
 // csvClosable implements ReadCloser
@@ -31,29 +32,6 @@ type csvClosable struct {
 }
 
 var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
-
-// kind tries to identify data type
-// from string for parsing in Go type.
-func kind(s string) FeatureType {
-	// FIXME to not recall converiosn methods
-	// in the caller. Return also converted values.
-	if checkerRgxp.MatchString(s) {
-		stracer.Traceln("clenerRgxp matched:", s)
-		return Cat
-	}
-	_, err := strconv.ParseFloat(s, 64)
-	if err == nil {
-		return Float
-	}
-	return Str
-}
-
-func cleanStrings(row []string) {
-	cleanerRgxp := regexp.MustCompile(`[[:space:]]`)
-	for i, s := range row {
-		row[i] = cleanerRgxp.ReplaceAllString(s, "")
-	}
-}
 
 // Normalize mathematically normalizes data.
 //
@@ -115,7 +93,7 @@ func Normalize(dataReadCloser ReadCloser) (Table, error) {
 		iRow = make([]interface{}, len(row))
 		for i, e := range row {
 			switch kind(e) {
-			case Float:
+			case float:
 				f, err := strconv.ParseFloat(e, 64)
 				if err != nil {
 					return nil, err
@@ -126,9 +104,9 @@ func Normalize(dataReadCloser ReadCloser) (Table, error) {
 				} else if f < mins[i].(float64) {
 					mins[i] = f
 				}
-			case Cat:
+			case cat:
 				iRow[i] = newCategory(e)
-			case Str:
+			case str:
 				iRow[i] = e
 			default:
 				panic("unknown type normalizing data")
@@ -174,4 +152,71 @@ func LoadCSV(path string) (ReadCloser, error) {
 		f,
 		r,
 	}, nil
+}
+
+// ReadAllCSV read whole file and load it
+// in memory.
+func ReadAllCSV(path string) (Table, error) {
+	// FIXME test it!
+	var dataSlice memoryTable = [][]interface{}{}
+	iRow := []interface{}{}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	r := csv.NewReader(f)
+	for {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		cleanStrings(row)
+		iRow = make([]interface{}, len(row))
+		for i, e := range row {
+			switch kind(e) {
+			case float:
+				f, err := strconv.ParseFloat(e, 64)
+				if err != nil {
+					return nil, err
+				}
+				iRow[i] = f
+			case cat:
+				iRow[i] = newCategory(e)
+			case str:
+				iRow[i] = e
+			default:
+				panic("unknown type normalizing data")
+
+			}
+		}
+		dataSlice = append(dataSlice, iRow)
+	}
+	return dataSlice, nil
+}
+
+// kind tries to identify data type
+// from string for storing it into a Go type.
+func kind(s string) featureType {
+	// FIXME to not recall converiosn methods
+	// in the caller. Return also converted values.
+	if checkerRgxp.MatchString(s) {
+		trace.Println("clenerRgxp matched:", s)
+		return cat
+	}
+	_, err := strconv.ParseFloat(s, 64)
+	if err == nil {
+		return float
+	}
+	return str
+}
+
+func cleanStrings(row []string) {
+	cleanerRgxp := regexp.MustCompile(`[[:space:]]`)
+	for i, s := range row {
+		row[i] = cleanerRgxp.ReplaceAllString(s, "")
+	}
 }
