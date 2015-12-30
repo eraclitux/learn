@@ -6,18 +6,18 @@ import (
 	"github.com/gonum/matrix/mat64"
 )
 
+// Used to correct floating point errors.
+// Everything equal or less than small+epsilon is considered zero (right?)
+const epsilon float64 = 0.0000001
+
 // pinv uses SVD to calculate pseudo inverse of
 // a given matrix.
 func pinv(X *mat64.Dense) {
 	// Using SVD to calculate pseudo-inverse:
 	// https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse#Singular_value_decomposition_.28SVD.29
 
-	// epsilon := math.Pow(2, -52.0)
-	//const epsilon float64 = 0.0000001 //used to correct floating point
-	//errors. Everything equal or less than small+epsilon (right?) is considered zero.
-
-	// small := math.Pow(2, -966.0)  || math.SmallestNonzeroFloat64
-	svd := mat64.SVD(X, 0.0000001, math.SmallestNonzeroFloat64, true, true)
+	// small as smallest non zero float math.SmallestNonzeroFloat64
+	svd := mat64.SVD(X, epsilon, math.SmallestNonzeroFloat64, true, true)
 
 	l := len(svd.Sigma)
 	// Assemble sigma pseudo inverse matrix.
