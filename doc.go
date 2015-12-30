@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-// Package nml exposes some machine learning alghoritms with a focus on practical use.
+// Package nml exposes some machine learning alghoritms with a focus on practical usage.
 //
 // It tries to be as idiomatic as possible. Interfaces are used in public APIs when possible
 // to make methods adaptable to custom needs.
@@ -23,9 +23,9 @@
 //
 // K means clustering
 //
-// Categorical and numeriacl features are supported.
+// Categorical and numerical features are supported.
 //
-// Method for Distance calculation is automatically
+// Method for distance calculation is automatically
 // choosed at runtime:
 //
 // - manhattan for numerical features

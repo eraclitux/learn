@@ -11,14 +11,12 @@ import (
 	"strings"
 )
 
-// UnknownType is returned in case a feature is an
-// unrecognized type.
-var UnknownType error = errors.New("unknown type")
-
 // NoRow error should be returned in Table's Row
 // in case of problems retrieving data from underlying
 // storage.
 var NoRow error = errors.New("no row with that index")
+
+var NoData error = errors.New("no data")
 
 type Point struct {
 	// The index of centroid to which point belongs.
@@ -80,6 +78,8 @@ func (c *Category) String() string {
 	return fmt.Sprintf(format, c.data)
 }
 
+// BUG(eraclitux): divide TotalSSE for number of samples
+// to have a smaller number.
 type KmcResult struct {
 	Map       []Point
 	Centroids [][]interface{}
@@ -111,7 +111,7 @@ type Table interface {
 	// Returns i-th row.
 	Row(i int) ([]interface{}, error)
 	//Headers() []string
-	// Maybe usefull it future:
+	// Maybe usefull in future:
 	// for d.Next {d.Row()}
 	//Row() []interface{}
 	//Next() bool

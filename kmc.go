@@ -14,6 +14,8 @@ import (
 	"github.com/eraclitux/stracer"
 )
 
+// BUG(eraclitux): somethimes it returns same
+// category in tests.
 func createRandCategory(l uint) *Category {
 	sS := []string{}
 	for i := 0; i < int(l); i++ {
@@ -22,6 +24,9 @@ func createRandCategory(l uint) *Category {
 	}
 	return newCategory(strings.Join(sS, ","))
 }
+
+// BUG(eraclitux): Andrew Ng suggests to initialize centroids
+// to points of training samples.
 func createRandomCentroids(k int, s []interface{}) ([][]interface{}, error) {
 	l := len(s)
 	r := make([][]interface{}, 0, k)
@@ -36,7 +41,7 @@ func createRandomCentroids(k int, s []interface{}) ([][]interface{}, error) {
 			case string:
 				c[i] = ""
 			default:
-				return nil, UnknownType
+				return nil, unknownType(e)
 			}
 		}
 		r = append(r, c)

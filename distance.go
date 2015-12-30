@@ -29,7 +29,7 @@ func elementsDistance(a1, a2 interface{}) (d float64, er error) {
 	case *Category:
 		return a1.(*Category).distance(a2.(*Category)), nil
 	default:
-		return -1, UnknownType
+		return -1, unknownType(a1)
 	}
 }
 
