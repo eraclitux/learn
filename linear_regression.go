@@ -1,3 +1,7 @@
+// Copyright (c) 2015 Andrea Masi. All rights reserved.
+// Use of this source code is governed by MIT license
+// which that can be found in the LICENSE.txt file.
+
 package nml
 
 import (
@@ -111,7 +115,7 @@ func (lr *LinearRegression) Fit(t Table) error {
 // 	x1 x2 ... xn
 //	...
 // 	x1 x2 ... xn
-// returns a slice of float of estimeted y.
+// returns a slice of float of estimeted y values.
 //
 // Features must be stored as float64 in Table.
 func (lr *LinearRegression) Predict(t Table) ([]float64, error) {

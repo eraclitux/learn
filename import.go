@@ -60,6 +60,12 @@ var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
 //
 // A good reference for data normalization:
 // http://people.revoledu.com/kardi/tutorial/Similarity/MutivariateDistance.html
+// BUG(eraclitux): better to use mean normalization
+//
+//	x - mean(x)
+//	-----------
+//	Vmax - Vmin
+//
 func Normalize(dataReadCloser ReadCloser) (Table, error) {
 	defer dataReadCloser.Close()
 	var dataSlice memoryTable = [][]interface{}{}

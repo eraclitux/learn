@@ -22,7 +22,7 @@ func TestPinv(t *testing.T) {
 			[]float64{
 				-6.38888888888888e-01, -1.66666666666666e-01, 3.05555555555555e-01,
 				// NOTE E(2,2) == -3.608224830031759e-16, but it's ok,
-				// it's caused by IEEE754 limits, EqualApprox deal with that.
+				// it's caused by IEEE754 limits, EqualApprox deals with that.
 				-5.55555555555556e-02, 3.81639164714898e-17, 5.55555555555556e-02,
 				5.27777777777777e-01, 1.66666666666666e-01, -1.94444444444444e-01,
 			},
