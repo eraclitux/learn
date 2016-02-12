@@ -2,12 +2,12 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package nml
+package learn
 
 import (
 	"errors"
 
-	"github.com/eraclitux/stracer"
+	"github.com/eraclitux/trace"
 	"github.com/gonum/matrix/mat64"
 )
 
@@ -84,18 +84,18 @@ func NewLinearRegression(Data Table) (Regression, error) {
 				} else if j == o-1 {
 					// y element
 					yRows[i] = f
-					stracer.Traceln("y:", f)
+					trace.Println("y:", f)
 				} else {
 					row[j+1] = f
 				}
 			}
 		}
-		stracer.Traceln("row:", row)
+		trace.Println("row:", row)
 		X.SetRow(i, row)
 	}
 	y := mat64.NewDense(m, 1, yRows)
-	stracer.Traceln(X)
-	stracer.Traceln(y)
+	trace.Println(X)
+	trace.Println(y)
 	// theta = pinv(X'*X)*X'*y
 	var M mat64.Dense
 	return &LinearRegression{

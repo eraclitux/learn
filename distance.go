@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package nml
+package learn
 
 func hummingD(a, b uint) uint {
 	var dist uint

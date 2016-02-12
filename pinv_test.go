@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package nml
+package learn
 
 import (
 	"testing"
@@ -45,9 +45,9 @@ func TestPinv(t *testing.T) {
 		S := mat64.NewDense(3, 3, e.s)
 		pinv(S)
 		if !mat64.EqualApprox(S, E, 0.00001) {
+			t.Errror("not a (pseudo)inverse matrix in case", i)
 			t.Log(S)
 			t.Log(E)
-			t.Fatal("not a (pseudo)inverse matrix in case", i)
 		}
 	}
 }

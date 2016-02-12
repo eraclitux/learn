@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package nml
+package learn
 
 import (
 	"math"
@@ -16,7 +16,7 @@ const epsilon float64 = 0.0000001
 
 // pinv uses SVD to calculate pseudo inverse of
 // a given matrix.
-func pinv(X *mat64.Dense) {
+func pinv(X *mat64.Dense) { // FIXME use interface
 	// Using SVD to calculate pseudo-inverse:
 	// https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse#Singular_value_decomposition_.28SVD.29
 

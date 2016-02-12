@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package nml
+package learn
 
 import (
 	"encoding/csv"
@@ -12,7 +12,6 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/eraclitux/stracer"
 	"github.com/eraclitux/trace"
 )
 
@@ -93,9 +92,9 @@ func Normalize(dataReadCloser ReadCloser) (Table, error) {
 			}
 		}
 		j++
-		stracer.Traceln("row from csv:", row)
+		trace.Println("row from csv:", row)
 		cleanStrings(row)
-		stracer.Traceln("cleaned row:", row)
+		trace.Println("cleaned row:", row)
 		iRow = make([]interface{}, len(row))
 		for i, e := range row {
 			switch kind(e) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package nml
+package learn
 
 import (
 	"errors"
@@ -115,6 +115,8 @@ type Table interface {
 	// for d.Next {d.Row()}
 	//Row() []interface{}
 	//Next() bool
+	// Usefull?
+	//NFeatures() // returns numer of features?
 }
 
 type memoryTable [][]interface{}

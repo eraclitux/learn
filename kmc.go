@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-package nml
+package learn
 
 import (
 	"math"
@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eraclitux/stracer"
+	"github.com/eraclitux/trace"
 )
 
-// BUG(eraclitux): somethimes it returns same
+// BUG(eraclitux): randomly returns same
 // category in tests.
 func createRandCategory(l uint) *Category {
 	sS := []string{}
@@ -64,7 +64,7 @@ func zeroCentroid(c []interface{}) {
 	}
 }
 
-// incrementCentroid adds quantities to centorid elements
+// incrementCentroid adds quantities to centroids elements
 // to calculate the mean after.
 func incrementCentroid(c []interface{}, d []interface{}) {
 	for i, e := range c {
@@ -76,7 +76,7 @@ func incrementCentroid(c []interface{}, d []interface{}) {
 		case string:
 			// do nothing for string features.
 		default:
-			panic("unknown type incremententing centroid")
+			panic("unknown type increasing centroid")
 		}
 	}
 }
@@ -105,7 +105,7 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) error
 	}
 	for k := 0; k < len(centroids); k++ {
 		if eleMap[k] == 0 {
-			stracer.Traceln(k, "is a zero element centroid, not zeroing")
+			trace.Println(k, "is a zero element centroid, not zeroing")
 			continue
 		}
 		zeroCentroid(centroids[k])
@@ -130,8 +130,8 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) error
 //
 // Data MUST be normalized before to be passed, Normalize function could be used.
 func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
-	// FIXME randomly centroids with zero elemtns are created which take to higher SSE.
-	// FIXME check for unnormalized data!
+	// FIXME randomly centroids with zero elements are created which take to higher SSE.
+	// FIXME check for not normalized data!
 
 	// This assigns all elements to centroid 0 as default.
 	result = &KmcResult{}
@@ -180,7 +180,7 @@ func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 			err = err
 			return
 		}
-		stracer.Traceln("centroids moved", centroids)
+		trace.Println("centroids moved", centroids)
 	}
 	for _, p := range dataMap {
 		result.TotalSSE += math.Pow(p.Distance, 2)
