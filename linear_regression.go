@@ -97,7 +97,7 @@ func NewLinearRegression(Data Table) (Regression, error) {
 	trace.Println(X)
 	trace.Println(y)
 	// theta = pinv(X'*X)*X'*y
-	var M mat64.Dense
+	//var M mat64.Dense
 	return &LinearRegression{
 		// FIXME make design matrix.
 		X: X,

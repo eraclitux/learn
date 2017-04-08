@@ -12,7 +12,7 @@ import (
 
 func TestPinv(t *testing.T) {
 	cases := []struct {
-		s, e []float64
+		test, expected []float64
 	}{
 		{
 			// NOTE this is a singular matrix.
@@ -40,14 +40,17 @@ func TestPinv(t *testing.T) {
 		},
 	}
 
-	for i, e := range cases {
-		E := mat64.NewDense(3, 3, e.e)
-		S := mat64.NewDense(3, 3, e.s)
-		pinv(S)
-		if !mat64.EqualApprox(S, E, 0.00001) {
-			t.Errror("not a (pseudo)inverse matrix in case", i)
-			t.Log(S)
-			t.Log(E)
+	for _, e := range cases {
+		E := mat64.NewDense(3, 3, e.expected)
+		T := mat64.NewDense(3, 3, e.test)
+		pinv(T)
+		if !mat64.EqualApprox(T, E, 0.000001) {
+			t.Error("not a (pseudo)inverse matrix")
 		}
+		fT := mat64.Formatted(T)
+		fE := mat64.Formatted(E)
+		t.Logf("have:\n%v\n", fT)
+		t.Logf("want:\n%v\n", fE)
+		t.Log("=========================")
 	}
 }

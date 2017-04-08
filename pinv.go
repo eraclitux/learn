@@ -5,39 +5,39 @@
 package learn
 
 import (
-	"math"
-
+	"github.com/gonum/matrix"
 	"github.com/gonum/matrix/mat64"
 )
 
-// Used to correct floating point errors.
-// Everything equal or less than small+epsilon is considered zero (right?)
-const epsilon float64 = 0.0000001
-
 // pinv uses SVD to calculate pseudo inverse of
 // a given matrix.
-func pinv(X *mat64.Dense) { // FIXME use interface
+func pinv(X *mat64.Dense) {
+	// FIXME use interface?
+	// FIXME do not modify arg but return a pointer
 	// Using SVD to calculate pseudo-inverse:
 	// https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse#Singular_value_decomposition_.28SVD.29
 
-	// small as smallest non zero float math.SmallestNonzeroFloat64
-	svd := mat64.SVD(X, epsilon, math.SmallestNonzeroFloat64, true, true)
+	svd := new(mat64.SVD)
+	_ = svd.Factorize(X, matrix.SVDFull)
+	singValues := svd.Values(nil)
 
-	l := len(svd.Sigma)
+	l := len(singValues)
 	// Assemble sigma pseudo inverse matrix.
 	// We get the pseudo inverse by taking the reciprocal
 	// of each non-zero element on the diagonal,
 	// leaving the zeros in place, and then
 	// transposing the matrix.
 	S := mat64.NewDense(l, l, nil)
-	for i, e := range svd.Sigma {
-		if svd.Sigma[i] != 0 {
-			svd.Sigma[i] = 1 / e
-			S.Set(i, i, svd.Sigma[i])
+	for i, e := range singValues {
+		if singValues[i] != 0 {
+			singValues[i] = 1 / e
+			S.Set(i, i, singValues[i])
 		}
 	}
-	var L, M mat64.Dense
-	L.Mul(svd.V, S.T())
-	M.Mul(&L, svd.U.T())
+	var U, V, L, M mat64.Dense
+	U.UFromSVD(svd)
+	V.VFromSVD(svd)
+	L.Mul(&V, S.T())
+	M.Mul(&L, U.T())
 	*X = M
 }
