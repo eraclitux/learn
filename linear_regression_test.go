@@ -18,6 +18,8 @@ func loadDataset(t *testing.T) Table {
 	return trainData
 }
 
+const tolerance = 1e-7
+
 func TestLinearRegression_Predict(t *testing.T) {
 	trainData := loadDataset(t)
 	var tab MemoryTable = make([][]interface{}, 1)
