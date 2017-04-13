@@ -4,22 +4,25 @@
 
 package learn
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func loadDataset(t *testing.T) Table {
 	// Load all data in memory.
-	trainData, err := ReadAllCSV("datasets/anscombe.csv")
+	trainData, err := ReadAllCSV("datasets/linear_test.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
 	return trainData
-
 }
 
-func TestNewLinearRegression(t *testing.T) {
+func TestLinearRegression_Predict(t *testing.T) {
 	trainData := loadDataset(t)
-	var tab memoryTable = make([][]interface{}, 1)
-	tab[0] = []interface{}{5.0, 5.0, 5.0, 8.0, 5.68, 4.74, 5.73, 6.89}
+	var tab MemoryTable = make([][]interface{}, 1)
+	// Hand crafted case.
+	tab[0] = []interface{}{1650.0, 3.0}
 	lr, err := NewLinearRegression(trainData)
 	if err != nil {
 		t.Fatal(err)
@@ -28,17 +31,7 @@ func TestNewLinearRegression(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(y)
-	t.Fatal("test me")
-}
-
-func TestLinearRegression_Fit(t *testing.T) {
-	t.Fatal("testing me")
-}
-func TestLinearRegression_Predict(t *testing.T) {
-	var tab memoryTable = [][]interface{}{
-		[]interface{}{"not", "allowed"},
+	if e := math.Abs(y[0] - 293081.464335); e > tolerance {
+		t.Fatal("prediction over tolerance:", e)
 	}
-	t.Log(tab)
-	t.Fail()
 }

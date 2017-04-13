@@ -119,10 +119,11 @@ type Table interface {
 	//NFeatures() // returns numer of features?
 }
 
-type memoryTable [][]interface{}
+// MemoryTable is a Table that stores data in memory.
+type MemoryTable [][]interface{}
 
-func (t memoryTable) Len() int { return len(t) }
-func (t memoryTable) Row(i int) ([]interface{}, error) {
+func (t MemoryTable) Len() int { return len(t) }
+func (t MemoryTable) Row(i int) ([]interface{}, error) {
 	if i > len(t)-1 {
 		return nil, NoRow
 	}

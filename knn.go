@@ -83,7 +83,7 @@ func (t kSamples) getNearest() string {
 
 // Predict calculates category for each element in testData.
 func (k *kNNClassifier) Predict(testData Table) (Table, error) {
-	var prediction memoryTable = make([][]interface{}, testData.Len())
+	var prediction MemoryTable = make([][]interface{}, testData.Len())
 	for j := 0; j < testData.Len(); j++ {
 		testRow, err := testData.Row(j)
 		if err != nil {

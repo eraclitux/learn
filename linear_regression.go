@@ -16,28 +16,61 @@ type Regression interface {
 	Predict(Table) ([]float64, error)
 }
 
-type LinearRegression struct {
-	// X is a representation of design matrix,
-	// an (m x n+1) matrix with cases as rows
-	// wheree X(i,1) is always 1.
-	//	1 x1 ... xn+1
-	//	...
-	//	1 x1 ... xn+1
-	// FIXME we really need to store this?
-	X *mat64.Dense
-	// y is a vector of observed values
-	// of dependent variable.
-	y               *mat64.Dense
-	gradientDescent bool
-	theta           *mat64.Dense
+type linearRegression struct {
+	theta mat64.Matrix
 }
 
-// NewLinearRegression returns an implementation of
-// Regression interface.
+// Fit updates training data.
+func (lr *linearRegression) Fit(t Table) error {
+	return nil
+}
+
+// Predict given a Table with feature set to predict in its rows:
+// 	x1 x2 ... xn
+//	...
+// 	x1 x2 ... xn
+// returns a slice of float of estimated y values.
 //
-// Data is a table with training samples as rows.
+// Features must be stored as float64 in Table.
+func (lr *linearRegression) Predict(t Table) ([]float64, error) {
+	// FIXME Table confuses here? use []float64
+	// and return a single float64
+	m := t.Len()
+	var y mat64.Dense
+	ys := make([]float64, m)
+	for i := 0; i < m; i++ {
+		row, err := t.Row(i)
+		if err != nil {
+			return nil, err
+		}
+		// +1 for x0
+		n := len(row) + 1
+		a := make([]float64, n)
+		// for x0
+		a[0] = 1
+		for i, e := range row {
+			f, ok := e.(float64)
+			if !ok {
+				return nil, unknownType(f)
+			}
+			a[i+1] = f
+		}
+		X := mat64.NewDense(1, n, a)
+		// y is a (1 x 1) matrix
+		y.Mul(X, lr.theta)
+		fT := mat64.Formatted(X)
+		trace.Printf("X:\n%v\n", fT)
+		ys[i] = y.At(0, 0)
+	}
+	return ys, nil
+}
+
+// NewLinearRegression returns Regression type
+// for linear regression.
+//
+// Data is a Table with training samples as rows.
 // Last element in the row MUST be
-// the observed values of dependent variable y.
+// the observed value of dependent variable y.
 //
 // Design matrix X (sample data as row with X(i,1)==1)
 // will be created automatically.
@@ -46,9 +79,15 @@ type LinearRegression struct {
 func NewLinearRegression(Data Table) (Regression, error) {
 	// m: number of samples
 	// n: number of features
-
-	// TODO automatic select between gradient descent and normal equation.
-
+	// X is a representation of design matrix,
+	// an (m x n+1) matrix with cases as rows
+	// where X(i,1) is always 1.
+	//	1 x1 ... xn+1
+	//	...
+	//	1 x1 ... xn+1
+	// Y is the vector of observed values
+	// of dependent variable.
+	var X, Y *mat64.Dense
 	m := Data.Len()
 	if m <= 0 {
 		return nil, NoData
@@ -61,10 +100,8 @@ func NewLinearRegression(Data Table) (Regression, error) {
 	// values of y in the last column.
 	// +1 for theta0 == 1 terms.
 	o := len(s1)
-	// TODO check if m < n
-
 	// Build design matrix and y vector.
-	X := mat64.NewDense(m, o, nil)
+	X = mat64.NewDense(m, o, nil)
 	yRows := make([]float64, m)
 	for i := 0; i < m; i++ {
 		// Row for design matrix.
@@ -84,62 +121,27 @@ func NewLinearRegression(Data Table) (Regression, error) {
 				} else if j == o-1 {
 					// y element
 					yRows[i] = f
-					trace.Println("y:", f)
 				} else {
 					row[j+1] = f
 				}
 			}
 		}
-		trace.Println("row:", row)
 		X.SetRow(i, row)
 	}
-	y := mat64.NewDense(m, 1, yRows)
-	trace.Println(X)
-	trace.Println(y)
+	Y = mat64.NewDense(m, 1, yRows)
 	// theta = pinv(X'*X)*X'*y
-	//var M mat64.Dense
-	return &LinearRegression{
-		// FIXME make design matrix.
-		X: X,
-		y: y,
-	}, nil
-}
-
-// Fit can be used to update training data for the specific
-// estimeted y.
-func (lr *LinearRegression) Fit(t Table) error {
-	return nil
-}
-
-// Predict given a Table with feature set to predict in its rows:
-// 	x1 x2 ... xn
-//	...
-// 	x1 x2 ... xn
-// returns a slice of float of estimeted y values.
-//
-// Features must be stored as float64 in Table.
-func (lr *LinearRegression) Predict(t Table) ([]float64, error) {
-	var y mat64.Dense
-	ys := make([]float64, t.Len())
-	for i := 0; i < t.Len(); i++ {
-		row, err := t.Row(i)
-		if err != nil {
-			return nil, err
-		}
-		// +1 for x0
-		l := len(row) + 1
-		a := make([]float64, l)
-		for _, e := range row {
-			if _, ok := e.(float64); !ok {
-				return nil, unknownType(e)
-			}
-		}
-		// for x0
-		a[0] = 1
-		X := mat64.NewDense(1, l, a)
-		// y is a (1 x 1) matrix
-		y.Mul(X, lr.theta)
-		ys[i] = y.At(1, 1)
+	P := new(mat64.Dense)
+	Theta := new(mat64.Dense)
+	// (n x n)
+	P.Mul(X.T(), X)
+	Pi, err := pinv(P)
+	if err != nil {
+		return nil, err
 	}
-	return ys, nil
+	Theta.Product(Pi, X.T(), Y)
+	fT := mat64.Formatted(Theta)
+	trace.Printf("Theta:\n%v\n", fT)
+	return &linearRegression{
+		theta: Theta,
+	}, nil
 }

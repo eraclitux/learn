@@ -37,7 +37,7 @@ func TestLoadCSV(t *testing.T) {
 
 func TestNormalize(t *testing.T) {
 	// [0.2306153846153846 1 1000] [0 0.7777777777777778 0100] [1 0 0001]
-	var expected memoryTable = [][]interface{}{
+	var expected MemoryTable = [][]interface{}{
 		[]interface{}{
 			float64(0.2306153846153846),
 			float64(1),
@@ -59,14 +59,13 @@ func TestNormalize(t *testing.T) {
 		t.Fatal(err)
 	}
 	rC := csvClosable{f, csv.NewReader(strings.NewReader(string(dataCSV)))}
+	defer rC.Close()
 	data, err := Normalize(rC)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(data, expected) {
 		t.Fatalf("expected: %v got: %v", expected, data)
-	}
-	if testing.Verbose() {
 		t.Log("normalized data:", data)
 	}
 }

@@ -59,6 +59,7 @@ var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
 //
 // A good reference for data normalization:
 // http://people.revoledu.com/kardi/tutorial/Similarity/MutivariateDistance.html
+//
 // BUG(eraclitux): better to use mean normalization
 //
 //	x - mean(x)
@@ -67,7 +68,7 @@ var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
 //
 func Normalize(dataReadCloser ReadCloser) (Table, error) {
 	defer dataReadCloser.Close()
-	var dataSlice memoryTable = [][]interface{}{}
+	var dataSlice MemoryTable = [][]interface{}{}
 	iRow := []interface{}{}
 	// store maxs and mins
 	maxs := []interface{}{}
@@ -163,7 +164,7 @@ func LoadCSV(path string) (ReadCloser, error) {
 // in memory.
 func ReadAllCSV(path string) (Table, error) {
 	// FIXME test it!
-	var dataSlice memoryTable = [][]interface{}{}
+	var dataSlice MemoryTable = [][]interface{}{}
 	iRow := []interface{}{}
 	f, err := os.Open(path)
 	if err != nil {
