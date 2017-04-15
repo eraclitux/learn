@@ -4,7 +4,7 @@
 
 package learn
 
-func hummingD(a, b uint) uint {
+func hammingD(a, b uint) uint {
 	var dist uint
 	val := a ^ b
 	for val != 0 {
@@ -30,8 +30,8 @@ func elementsDistance(a1, a2 interface{}) (d float64, er error) {
 	switch a1.(type) {
 	case float64:
 		return manhattan(a1.(float64), a2.(float64)), nil
-	case *Category:
-		return a1.(*Category).distance(a2.(*Category)), nil
+	case *category:
+		return a1.(*category).distance(a2.(*category)), nil
 	default:
 		return -1, unknownType(a1)
 	}

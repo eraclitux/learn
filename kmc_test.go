@@ -77,7 +77,7 @@ func TestCenterCentroid(t *testing.T) {
 	}
 }
 
-func TestHummingD(t *testing.T) {
+func TestHammingD(t *testing.T) {
 	cases := []struct {
 		a, b uint
 		d    uint
@@ -91,16 +91,16 @@ func TestHummingD(t *testing.T) {
 		{16, 15, 5},
 	}
 	for _, c := range cases {
-		d := hummingD(c.a, c.b)
+		d := hammingD(c.a, c.b)
 		if d != c.d {
-			t.Fatalf("wrong humming distance: %b <> %b = %d, wants %d", c.a, c.b, d, c.d)
+			t.Fatalf("wrong hamming distance: %b <> %b = %d, wants %d", c.a, c.b, d, c.d)
 		}
 	}
 }
 
 func TestCategory_Distance(t *testing.T) {
 	cases := []struct {
-		a, b     *Category
+		a, b     *category
 		distance float64
 	}{
 		{newCategory("1,1,1,1"), newCategory("0,0,0,0"), 1},
@@ -117,23 +117,23 @@ func TestCategory_Distance(t *testing.T) {
 
 func TestCategory_Mean(t *testing.T) {
 	cases := []struct {
-		a    *Category
-		cats []*Category
-		mean *Category
+		a    *category
+		cats []*category
+		mean *category
 	}{
 		{
 			newCategory("0,0,0,0"),
-			[]*Category{newCategory("1,1,1,1"), newCategory("1,1,1,1")},
+			[]*category{newCategory("1,1,1,1"), newCategory("1,1,1,1")},
 			newCategory("1,1,1,1"),
 		},
 		{
 			newCategory("0,0,0,0"),
-			[]*Category{newCategory("0,0,1,1"), newCategory("1,1,0,0"), newCategory("1,1,0,0")},
+			[]*category{newCategory("0,0,1,1"), newCategory("1,1,0,0"), newCategory("1,1,0,0")},
 			newCategory("1,0,0,1"),
 		},
 		{
 			newCategory("0,0,0,0"),
-			[]*Category{newCategory("0,0,1,1"), newCategory("1,1,0,0"), newCategory("1,1,0,0"), newCategory("1,1,0,0")},
+			[]*category{newCategory("0,0,1,1"), newCategory("1,1,0,0"), newCategory("1,1,0,0"), newCategory("1,1,0,0")},
 			newCategory("1,0,0,1"),
 		},
 	}

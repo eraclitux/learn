@@ -5,6 +5,7 @@
 package learn
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -14,9 +15,62 @@ import (
 	"github.com/eraclitux/trace"
 )
 
+// category models a categorical (aka nominal es choices A,B etc) feature.
+// Choices must be translated to the form:
+//	"[1,0,1]"
+type category struct {
+	data     uint
+	choicesN uint
+}
+
+// choices is in the form "[1,0,1]"
+func newCategory(choices string) *category {
+	choices = checkerRgxp.ReplaceAllString(choices, "$1")
+	l := uint(len(strings.Split(choices, `,`)))
+	s := strings.Replace(choices, ",", "", -1)
+	s = strings.Replace(s, " ", "", -1)
+	if s == "" {
+		s = "0"
+	}
+	data, err := strconv.ParseUint(s, 2, 32)
+	if err != nil {
+		// Fail fast.
+		panic(fmt.Sprintf("in newCategory: %s", err))
+	}
+	return &category{
+		data:     uint(data),
+		choicesN: l,
+	}
+}
+
+func (c *category) add(b *category) {
+	c.data += b.data
+}
+
+func (c *category) zero() {
+	c.data = 0
+}
+
+// mean calculates mean for an element of
+// a centroid previously incremented l times.
+// TODO test for overflow, if 0b0000 & 0b111110000 != 0
+func (c *category) mean(l int) {
+	c.data = c.data / uint(l)
+}
+
+// Distance returns simple matching distance from the passed Category.
+// Returning value is ∈ [0,1].
+func (c *category) distance(b *category) float64 {
+	return float64(hammingD(c.data, b.data)) / float64(c.choicesN)
+}
+func (c *category) String() string {
+	format := fmt.Sprintf("%%0%db", c.choicesN)
+	return fmt.Sprintf(format, c.data)
+}
+
 // BUG(eraclitux): randomly returns same
 // category in tests.
-func createRandCategory(l uint) *Category {
+func createRandCategory(l uint) *category {
 	sS := []string{}
 	for i := 0; i < int(l); i++ {
 		sN := strconv.Itoa(rand.Intn(2))
@@ -25,7 +79,7 @@ func createRandCategory(l uint) *Category {
 	return newCategory(strings.Join(sS, ","))
 }
 
-// BUG(eraclitux): Andrew Ng suggests to initialize centroids
+// FIXME Andrew Ng suggests to initialize centroids
 // to points of training samples.
 func createRandomCentroids(k int, s []interface{}) ([][]interface{}, error) {
 	l := len(s)
@@ -36,8 +90,8 @@ func createRandomCentroids(k int, s []interface{}) ([][]interface{}, error) {
 			switch e.(type) {
 			case float64:
 				c[i] = rand.Float64()
-			case *Category:
-				c[i] = createRandCategory(e.(*Category).choicesN)
+			case *category:
+				c[i] = createRandCategory(e.(*category).choicesN)
 			case string:
 				c[i] = ""
 			default:
@@ -54,8 +108,8 @@ func zeroCentroid(c []interface{}) {
 		switch e.(type) {
 		case float64:
 			c[i] = float64(0)
-		case *Category:
-			c[i].(*Category).zero()
+		case *category:
+			c[i].(*category).zero()
 		case string:
 			// do nothing for string features.
 		default:
@@ -71,8 +125,8 @@ func incrementCentroid(c []interface{}, d []interface{}) {
 		switch e.(type) {
 		case float64:
 			c[i] = e.(float64) + d[i].(float64)
-		case *Category:
-			e.(*Category).add(d[i].(*Category))
+		case *category:
+			e.(*category).add(d[i].(*category))
 		case string:
 			// do nothing for string features.
 		default:
@@ -86,8 +140,8 @@ func centerCentroid(c []interface{}, l int) {
 		switch e.(type) {
 		case float64:
 			c[i] = e.(float64) / float64(l)
-		case *Category:
-			e.(*Category).mean(l)
+		case *category:
+			e.(*category).mean(l)
 		case string:
 			// do nothing for string features.
 		default:
@@ -128,7 +182,8 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) error
 
 // Kmc computes k means clustering.
 //
-// Data MUST be normalized before to be passed, Normalize function could be used.
+// Data MUST be normalized before to be passed,
+// Normalize function can be used for that.
 func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 	// FIXME randomly centroids with zero elements are created which take to higher SSE.
 	// FIXME check for not normalized data!
