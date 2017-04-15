@@ -12,16 +12,19 @@ func ExampleNewkNN() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Load all data in memory.
-	trainData, err := learn.Normalize(rC)
+	// Load train set in memory.
+	trainSet, err := learn.Normalize(rC)
 	if err != nil {
 		log.Fatal(err)
 	}
-	cf := learn.NewkNN(trainData, 5)
+	clf := learn.NewkNN(trainSet, 5)
+	//
+	// Categorize single sample
+	//
 	var tab learn.MemoryTable = make([][]interface{}, 1)
 	// FIXME use Normalize after refactoring
-	tab[0] = []interface{}{0.1, 0.1, 0.1, 0.1}
-	prediction, err := cf.Predict(tab)
+	tab[0] = []interface{}{0.2, 0.62, 0.07, 0.04}
+	prediction, err := clf.Predict(tab)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,8 +32,8 @@ func ExampleNewkNN() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(r[0])
+	fmt.Println("predicted category:", r[0])
 
 	// OUTPUT:
-	// setosa
+	// predicted category: setosa
 }

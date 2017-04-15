@@ -72,10 +72,10 @@ func (lr *linearRegression) Predict(t Table) ([]float64, error) {
 // Last element in the row MUST be
 // the observed value of dependent variable y.
 //
-// Design matrix X (sample data as row with X(i,1)==1)
-// will be created automatically.
+// Current implementation uses normal equation,
+// data normalization is not necessary.
 //
-// NOTE: this function will load whole Table in memory.
+// Table will be loaded in memory.
 func NewLinearRegression(Data Table) (Regression, error) {
 	// m: number of samples
 	// n: number of features
@@ -85,6 +85,7 @@ func NewLinearRegression(Data Table) (Regression, error) {
 	//	1 x1 ... xn+1
 	//	...
 	//	1 x1 ... xn+1
+	// The 'ones column' is added.
 	// Y is the vector of observed values
 	// of dependent variable.
 	var X, Y *mat64.Dense

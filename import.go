@@ -32,11 +32,8 @@ type csvClosable struct {
 
 var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
 
-// Normalize mathematically normalizes data.
-//
-// It loads data in memory. If this is not feasible because is "Big Data"
-// a cutom type which implements Table interface backed by
-// disk (file,database, etc) could be used.
+// Normalize mathematically normalizes data
+// loading them in memory.
 //
 // Every value (quantitative, nominal, cardinal, binary)
 // is transformed to appropriate scalar/Category
@@ -57,16 +54,16 @@ var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
 // to normalize all dataset.
 // Where (Vmax, Vmin) are that maximun and minimun values for that feature.
 //
-// A good reference for data normalization:
+// Reference for data normalization:
 // http://people.revoledu.com/kardi/tutorial/Similarity/MutivariateDistance.html
 //
-// BUG(eraclitux): better to use mean normalization
-//
-//	x - mean(x)
-//	-----------
-//	Vmax - Vmin
+// BUG(eraclitux): broken implementation? Verify that normalization is per feature.
 //
 func Normalize(dataReadCloser ReadCloser) (Table, error) {
+	// FIXME this should act on a Table to be more useful,
+	// must return mu and sigma
+	// FIXME use mean/sigma normalization:
+	//	[x - mean(x)] / sigma
 	defer dataReadCloser.Close()
 	var dataSlice MemoryTable = [][]interface{}{}
 	iRow := []interface{}{}
@@ -195,6 +192,7 @@ func ReadAllCSV(path string) (Table, error) {
 			case str:
 				iRow[i] = e
 			default:
+				// FIXME return error!
 				panic("unknown type normalizing data")
 
 			}

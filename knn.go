@@ -9,13 +9,36 @@ type Classifier interface {
 	// which stores predicted labels
 	// as single elements rows.
 	Predict(Table) (Table, error)
-	//Fit()
-	//CrossValidation()
+	//Fit() or Train()
 }
 
 type kNNClassifier struct {
 	trainData Table
 	k         int
+}
+
+// Predict calculates category for each element in testData.
+// BUG(eraclitux): if not normalized sample is passed
+// it panics, return an error.
+func (k *kNNClassifier) Predict(testData Table) (Table, error) {
+	var prediction MemoryTable = make([][]interface{}, testData.Len())
+	for j := 0; j < testData.Len(); j++ {
+		testRow, err := testData.Row(j)
+		if err != nil {
+			return nil, err
+		}
+		samples := newKSamples(k.k)
+		for i := 0; i < k.trainData.Len(); i++ {
+			trainRow, err := k.trainData.Row(i)
+			d, err := distance(testRow, trainRow, nil)
+			if err != nil {
+				return nil, err
+			}
+			samples.checkUpdate(d, trainRow)
+		}
+		prediction[j] = []interface{}{samples.getNearest()}
+	}
+	return prediction, nil
 }
 
 type kSample struct {
@@ -56,12 +79,13 @@ func (t kSamples) checkUpdate(d float64, row []interface{}) {
 	}
 }
 
-// getNearest return the clasified label for
+// getNearest returns the classified label for
 // given slice of k samples.
 func (t kSamples) getNearest() string {
 	m := make(map[string]int)
 	for _, e := range t {
 		// get label as last column in row.
+		// FIXME check this assertion
 		label := e.row[len(e.row)-1].(string)
 		if _, ok := m[label]; ok {
 			m[label]++
@@ -81,34 +105,12 @@ func (t kSamples) getNearest() string {
 	return label
 }
 
-// Predict calculates category for each element in testData.
-func (k *kNNClassifier) Predict(testData Table) (Table, error) {
-	var prediction MemoryTable = make([][]interface{}, testData.Len())
-	for j := 0; j < testData.Len(); j++ {
-		testRow, err := testData.Row(j)
-		if err != nil {
-			return nil, err
-		}
-		samples := newKSamples(k.k)
-		for i := 0; i < k.trainData.Len(); i++ {
-			trainRow, err := k.trainData.Row(i)
-			d, err := distance(testRow, trainRow, nil)
-			if err != nil {
-				return nil, err
-			}
-			//stracer.Traceln("trainRow label:", trainRow[len(trainRow)-1], "testRow label:", testRow[len(testRow)-1], "distance:", d)
-			samples.checkUpdate(d, trainRow)
-		}
-		prediction[j] = []interface{}{samples.getNearest()}
-	}
-	return prediction, nil
-}
-
-// NewkNNClassifier returns a new kNN Classifier.
+// NewkNN returns a new kNN Classifier.
+// Categories must be stored as last field in Table's rows.
 //
 // Given m number of training samples and n their number of features,
 // current brute force implemetation is at least O(nm²).
-func NewkNNClassifier(trainData Table, k int) Classifier {
+func NewkNN(trainData Table, k int) Classifier {
 	return &kNNClassifier{
 		trainData: trainData,
 		k:         k,

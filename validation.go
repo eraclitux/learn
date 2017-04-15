@@ -5,6 +5,7 @@
 package learn
 
 import (
+	"bytes"
 	"fmt"
 )
 
@@ -48,11 +49,20 @@ func (cm ConfMatrix) String() string {
 	return strMatrix
 }
 
-type ValidationReport map[string]validation
+type ValidationReport map[string]Validation
 
-type validation struct {
+type Validation struct {
 	Precision float64
 	Recall    float64
+}
+
+func (r ValidationReport) String() string {
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "%12s | %-6s | %-6s |\n", "feature", "precision", "recall")
+	for k, v := range r {
+		fmt.Fprintf(&buf, "%12s | %9.1f | %6.1f |\n", k, v.Precision, v.Recall)
+	}
+	return buf.String()
 }
 
 func computePrecision(k string, m map[string]int) float64 {
@@ -84,12 +94,11 @@ func computeRecall(k string, cm ConfMatrix) float64 {
 
 }
 
-// Report calculates precision and recall for a classification
-// result.
-func Report(cm ConfMatrix) ValidationReport {
-	var vr ValidationReport = make(map[string]validation)
+// Validate calculates precision and recall.
+func Validate(cm ConfMatrix) ValidationReport {
+	var vr ValidationReport = make(map[string]Validation)
 	for k, v := range cm.mm {
-		vr[k] = validation{
+		vr[k] = Validation{
 			Precision: computePrecision(k, v),
 			Recall:    computeRecall(k, cm),
 		}
@@ -97,9 +106,11 @@ func Report(cm ConfMatrix) ValidationReport {
 	return vr
 }
 
-// ConfMatrix computes confusion matrix. It expects predict Table
-// to store predicted labels in single field rows.
-func ConfusionMatrix(expect, predict Table) (ConfMatrix, error) {
+// ConfusionM computes confusion matrix.
+// predict Table must store
+// labels in single field rows, expected labels
+// are taken from the last field of expect rows.
+func ConfusionM(expect, predict Table) (ConfMatrix, error) {
 	var confMatrix = ConfMatrix{mm: make(map[string]map[string]int)}
 	for i := 0; i < expect.Len(); i++ {
 		row, err := expect.Row(i)

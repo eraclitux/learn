@@ -39,6 +39,6 @@
 //	12,	"[1,0,1,0]",	5,	15.10
 //	1,	"[0,0,0,1]"	1,	1
 //
-// Beware: this packages has unstable APIs that will
-// change frequently.
+// Beware: experimental package, APIs are unstable
+// and can change quickly.
 package learn
