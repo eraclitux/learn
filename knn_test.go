@@ -5,7 +5,6 @@
 package learn
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -71,29 +70,4 @@ func TestKSamples_GetNearest(t *testing.T) {
 	if nearest != "two" {
 		t.Fatal("nearest:", nearest)
 	}
-}
-
-func TestKNNClassifier_Predict(t *testing.T) {
-	rC, err := LoadCSV("datasets/iris.csv")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Load all data in memory.
-	trainData, err := Normalize(rC)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cf := NewkNNClassifier(trainData, 5)
-	prediction, err := cf.Predict(trainData)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cM, err := ConfusionMatrix(trainData, prediction)
-	if testing.Verbose() {
-		fmt.Println(cM)
-	}
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Fatal("test precision")
 }
