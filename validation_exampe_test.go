@@ -8,6 +8,7 @@ import (
 )
 
 func ExampleValidate() {
+	// Cross validation
 	rC, err := learn.LoadCSV("datasets/iris_train.csv")
 	if err != nil {
 		log.Fatal(err)
@@ -26,9 +27,6 @@ func ExampleValidate() {
 		log.Fatal(err)
 	}
 	clf := learn.NewkNN(trainSet, 5)
-	//
-	// Cross validation
-	//
 	predictedLabels, err := clf.Predict(testSet)
 	if err != nil {
 		log.Fatal(err)
@@ -42,11 +40,13 @@ func ExampleValidate() {
 	fmt.Println(report)
 
 	// OUTPUT:
-	//        versicolor(1):           5           0           2
-	//            setosa(2):           0           5           0
-	//	virginica(3):           0           0           3
-	//     feature | precision | recall |
-	//   virginica |       1.0 |    0.6 |
-	//  versicolor |       0.7 |    1.0 |
-	//      setosa |       1.0 |    1.0 |
+	//	versicolor(1):           5           0           2
+	//             setosa(2):           0           5           0
+	//          virginica(3):           0           0           3
+	//
+	//      feature | precision | recall |
+	//    virginica |       1.0 |    0.6 |
+	//   versicolor |       0.7 |    1.0 |
+	//       setosa |       1.0 |    1.0 |
+	// Overall accuracy: 0.866667
 }

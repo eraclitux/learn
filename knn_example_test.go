@@ -18,9 +18,7 @@ func ExampleNewkNN() {
 		log.Fatal(err)
 	}
 	clf := learn.NewkNN(trainSet, 5)
-	//
-	// Categorize single sample
-	//
+	// Categorize single sample.
 	var tab learn.MemoryTable = make([][]interface{}, 1)
 	// FIXME use Normalize after refactoring
 	tab[0] = []interface{}{0.2, 0.62, 0.07, 0.04}

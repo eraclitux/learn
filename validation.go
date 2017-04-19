@@ -13,21 +13,8 @@ type ConfMatrix struct {
 	mm map[string]map[string]int
 }
 
-func computeAccuracy(cm ConfMatrix) float64 {
-	correctN := 0.0
-	total := 0.0
-	for k, v := range cm.mm {
-		for q, n := range v {
-			// Sum all elements on diagonal
-			total += float64(n)
-			if q == k {
-				correctN += float64(n)
-			}
-		}
-	}
-	return correctN / total
-}
-
+// BUG(eraclitux): order labels to
+// have a predictable output.
 func (cm ConfMatrix) String() string {
 	// FIXME deal with mm == nil
 	labels := make([]string, 0, len(cm.mm))
@@ -42,63 +29,42 @@ func (cm ConfMatrix) String() string {
 			strMatrix += fmt.Sprintf("%12d", cm.mm[l][j])
 		}
 		strMatrix += "\n"
-
 	}
-	strMatrix += "\n"
-	strMatrix += fmt.Sprintf("Overall accuracy: %f", computeAccuracy(cm))
 	return strMatrix
 }
 
-type ValidationReport map[string]Validation
+type ValidationReport struct {
+	Labels map[string]Validation
+	// Overall
+	Accuracy float64
+}
 
 type Validation struct {
 	Precision float64
 	Recall    float64
 }
 
+// BUG(eraclitux): order labels to
+// have a predictable output.
 func (r ValidationReport) String() string {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "%12s | %-6s | %-6s |\n", "feature", "precision", "recall")
-	for k, v := range r {
+	for k, v := range r.Labels {
 		fmt.Fprintf(&buf, "%12s | %9.1f | %6.1f |\n", k, v.Precision, v.Recall)
 	}
+	fmt.Fprintf(&buf, "Overall accuracy: %f", r.Accuracy)
 	return buf.String()
 }
 
-func computePrecision(k string, m map[string]int) float64 {
-	tp := float64(m[k])
-	tpPlusfp := 0.0
-	for _, v := range m {
-		tpPlusfp += float64(v)
-	}
-	return tp / tpPlusfp
-
-}
-
-// more false negatives => bigger recall
-//	tp	fp
-//	fn	tn
-func computeRecall(k string, cm ConfMatrix) float64 {
-	tp := 0.0
-	totalFn := 0.0
-	for q, v := range cm.mm {
-		// This is tp
-		if q == k {
-			tp = float64(v[k])
-			continue
-		} else {
-			totalFn += float64(v[k])
-		}
-	}
-	return tp / (tp + totalFn)
-
-}
-
-// Validate calculates precision and recall.
+// Validate computes precision, recall and
+// overall accuracy.
 func Validate(cm ConfMatrix) ValidationReport {
-	var vr ValidationReport = make(map[string]Validation)
+	vr := ValidationReport{
+		Labels:   make(map[string]Validation),
+		Accuracy: computeAccuracy(cm),
+	}
 	for k, v := range cm.mm {
-		vr[k] = Validation{
+		vr.Labels[k] = Validation{
 			Precision: computePrecision(k, v),
 			Recall:    computeRecall(k, cm),
 		}
@@ -151,4 +117,48 @@ func ConfusionM(expect, predict Table) (ConfMatrix, error) {
 		}
 	}
 	return confMatrix, nil
+}
+
+func computeAccuracy(cm ConfMatrix) float64 {
+	correctN := 0.0
+	total := 0.0
+	for k, v := range cm.mm {
+		for q, n := range v {
+			// Sum all elements on diagonal
+			total += float64(n)
+			if q == k {
+				correctN += float64(n)
+			}
+		}
+	}
+	return correctN / total
+}
+
+func computePrecision(k string, m map[string]int) float64 {
+	tp := float64(m[k])
+	tpPlusfp := 0.0
+	for _, v := range m {
+		tpPlusfp += float64(v)
+	}
+	return tp / tpPlusfp
+
+}
+
+// more false negatives => bigger recall
+//	tp	fp
+//	fn	tn
+func computeRecall(k string, cm ConfMatrix) float64 {
+	tp := 0.0
+	totalFn := 0.0
+	for q, v := range cm.mm {
+		// This is tp
+		if q == k {
+			tp = float64(v[k])
+			continue
+		} else {
+			totalFn += float64(v[k])
+		}
+	}
+	return tp / (tp + totalFn)
+
 }
