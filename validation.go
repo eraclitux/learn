@@ -109,7 +109,7 @@ func Validate(cm ConfMatrix) ValidationReport {
 // ConfusionM computes confusion matrix.
 // predict Table must store
 // labels in single field rows, expected labels
-// are taken from the last field of expect rows.
+// are taken from the last field of expect's rows.
 func ConfusionM(expect, predict Table) (ConfMatrix, error) {
 	var confMatrix = ConfMatrix{mm: make(map[string]map[string]int)}
 	for i := 0; i < expect.Len(); i++ {
@@ -121,12 +121,19 @@ func ConfusionM(expect, predict Table) (ConfMatrix, error) {
 		if err != nil {
 			return ConfMatrix{}, err
 		}
-		expectedLabel := row[len(row)-1].(string)
-		predictedLabel := pRow[0].(string)
+		expectedLabel, ok := row[len(row)-1].(string)
+		if !ok {
+			return ConfMatrix{}, fmt.Errorf("learn: %v is not a string", expectedLabel)
+		}
+		predictedLabel, ok := pRow[0].(string)
+		if !ok {
+			return ConfMatrix{}, fmt.Errorf("learn: %v is not a string", predictedLabel)
+		}
 		if m, ok := confMatrix.mm[expectedLabel]; ok {
 			m[predictedLabel]++
 		} else {
 			confMatrix.mm[expectedLabel] = make(map[string]int)
+			confMatrix.mm[expectedLabel][predictedLabel]++
 		}
 	}
 	// get all labels
