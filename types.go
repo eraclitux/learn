@@ -39,22 +39,15 @@ func (r *KmcResult) String() string {
 	)
 }
 
-// ReadCloser makes possible to close underling
-// file descriptor in a caller.
-//
-// Read() method must returns a io.EOF when there is no more
-// data to parse.
-type ReadCloser interface {
-	Read() ([]string, error)
-	Close() error
-}
-
 // Table models tabular data.
 type Table interface {
 	// Returns total elements.
+	Caps() (int, int)
+	// FIXME remove
 	Len() int
 	// Returns i-th row.
-	Row(i int) ([]interface{}, error)
+	Row(int) ([]interface{}, error)
+	Update(int, []interface{}) error
 	//Headers() []string
 	// Maybe useful in future:
 	// for d.Next {d.Row()}
@@ -67,11 +60,28 @@ type Table interface {
 // MemoryTable is a Table that stores data in memory.
 type MemoryTable [][]interface{}
 
+func (t MemoryTable) Caps() (int, int) {
+	var rows, colums int
+	if t != nil {
+		rows = len(t)
+	}
+	if t[0] != nil {
+		colums = len(t[0])
+	}
+	return rows, colums
+}
 func (t MemoryTable) Len() int { return len(t) }
 func (t MemoryTable) Row(i int) ([]interface{}, error) {
-	if i > len(t)-1 {
+	if i >= len(t) {
 		return nil, NoRow
 	}
 	e := t[i]
 	return e, nil
+}
+func (t MemoryTable) Update(i int, r []interface{}) error {
+	if i >= len(t) {
+		return NoRow
+	}
+	t[i] = r
+	return nil
 }

@@ -17,7 +17,7 @@ func ExampleNewLinearRegression() {
 		log.Fatal(err)
 	}
 	var tab learn.MemoryTable = make([][]interface{}, 1)
-	// no need to normalize as normal equation
+	// No need to normalize as normal equation
 	// is used.
 	tab[0] = []interface{}{1650.0, 3.0}
 	lr, err := learn.NewLinearRegression(trainData)

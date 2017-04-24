@@ -24,143 +24,99 @@ const (
 	str
 )
 
-// csvClosable implements ReadCloser
-type csvClosable struct {
-	io.Closer
-	*csv.Reader
-}
-
 var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
 
-// Normalize mathematically normalizes data
-// loading them in memory.
+// Normalize uses Table's Update()
+// to modify rows with normalized values.
 //
-// Every value (quantitative, nominal, cardinal, binary)
-// is transformed to appropriate scalar/Category
-// with elements ∈ {0,1}.
+// Only numerical features are normalized
+// with the formula:
 //
-// Example of normalized data:
+//	x - mu
+//	------
+//	sigma
 //
-//	Hours	Choices		Stars	Price
-//	1,	"[1,0,1,0]", 	1,	1
-//	0,	"[0,0,0,1]" ,	0.25,	0
-//
-// Normalize uses the formula:
-//
-//	   x - Vmin
-//	-----------
-//	Vmax - Vmin
-//
-// to normalize all dataset.
-// Where (Vmax, Vmin) are that maximun and minimun values for that feature.
-//
-// Reference for data normalization:
-// http://people.revoledu.com/kardi/tutorial/Similarity/MutivariateDistance.html
-//
-// BUG(eraclitux): broken implementation? Verify that normalization is per feature.
-//
-func Normalize(dataReadCloser ReadCloser) (Table, error) {
-	// FIXME this should act on a Table to be more useful,
-	// must return mu and sigma
-	// FIXME use mean/sigma normalization:
-	//	[x - mean(x)] / sigma
-	defer dataReadCloser.Close()
-	var dataSlice MemoryTable = [][]interface{}{}
-	iRow := []interface{}{}
-	// store maxs and mins
-	maxs := []interface{}{}
-	mins := []interface{}{}
-	var j uint64
-	for {
-		row, err := dataReadCloser.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		if j == 0 {
-			maxs = make([]interface{}, len(row))
-			mins = make([]interface{}, len(row))
-			for i := 0; i < len(row); i++ {
-				var f float64
-				maxs[i] = f
-				f = math.MaxFloat64
-				mins[i] = f
+// If mu and sigma are nil then
+// they are calculated and returned
+// otherwise their calculation is skipped
+// and passed values are used, NaN is returned for
+// non numerical features.
+func Normalize(data Table, mu, sigma []float64) ([]float64, []float64, error) {
+	nRows, nColumns := data.Caps()
+	sum := make([]float64, nColumns)
+	if mu == nil || sigma == nil {
+		mu = make([]float64, nColumns)
+		sigma = make([]float64, nColumns)
+		for i := 0; i < nRows; i++ {
+			row, err := data.Row(i)
+			if err != nil {
+				return nil, nil, err
+			}
+			for i, e := range row {
+				switch e.(type) {
+				case float64:
+					sum[i] += e.(float64)
+				default:
+					// NaN is used to indicate
+					// an unprocessed feature.
+					sum[i] = math.NaN()
+				}
 			}
 		}
-		j++
-		trace.Println("row from csv:", row)
-		cleanStrings(row)
-		trace.Println("cleaned row:", row)
-		iRow = make([]interface{}, len(row))
-		for i, e := range row {
-			switch kind(e) {
-			case float:
-				f, err := strconv.ParseFloat(e, 64)
-				if err != nil {
-					return nil, err
-				}
-				iRow[i] = f
-				if f > maxs[i].(float64) {
-					maxs[i] = f
-				} else if f < mins[i].(float64) {
-					mins[i] = f
-				}
-			case cat:
-				iRow[i] = newCategory(e)
-			case str:
-				iRow[i] = e
-			default:
-				panic("unknown type normalizing data")
-
+		// Compute means.
+		for i, s := range sum {
+			mu[i] = s
+			if !math.IsNaN(s) {
+				mu[i] = s / float64(nRows)
 			}
 		}
-		dataSlice = append(dataSlice, iRow)
+		// Compute standard deviation.
+		for i := 0; i < nRows; i++ {
+			row, err := data.Row(i)
+			if err != nil {
+				return nil, nil, err
+			}
+			for i, e := range row {
+				switch e.(type) {
+				case float64:
+					sigma[i] += math.Pow(e.(float64)-mu[i], 2)
+				default:
+					// NaN is used to indicate
+					// an unprocessed feature.
+					sigma[i] = math.NaN()
+				}
+			}
+		}
+		for i, s := range sigma {
+			sigma[i] = s
+			if !math.IsNaN(s) {
+				sigma[i] = math.Sqrt(s / float64(nRows-1))
+			}
+		}
 	}
-	// Normalize
-	for _, row := range dataSlice {
+	// Normalize.
+	for i := 0; i < nRows; i++ {
+		row, err := data.Row(i)
+		if err != nil {
+			return nil, nil, err
+		}
 		for i, e := range row {
 			switch e.(type) {
 			case float64:
-				row[i] = (e.(float64) - mins[i].(float64)) / (maxs[i].(float64) - mins[i].(float64))
+				row[i] = (e.(float64) - mu[i]) / sigma[i]
 			}
 		}
+		data.Update(i, row)
 	}
-	return dataSlice, nil
-}
-
-// LoadCSV reads data from a file and returns
-// an implementation of ReadCloser.
-// Example of data
-//
-//	Hours	Choices		Stars	Price
-//
-//	12,	"A,C",		5,	15.10
-//	1,	"D",		1,	1
-//
-func LoadCSV(path string) (ReadCloser, error) {
-	// we cannot call
-	//defer f.Close()
-	// or a caller will get  "bad file descriptor" when reading
-	f, err := os.Open(path)
-	if err != nil {
-		return csvClosable{
-			nil,
-			nil,
-		}, err
-	}
-	r := csv.NewReader(f)
-	return csvClosable{
-		f,
-		r,
-	}, nil
+	return mu, sigma, nil
 }
 
 // ReadAllCSV read whole file and load it
 // in memory.
 func ReadAllCSV(path string) (Table, error) {
 	// FIXME test it!
+	// FIXME is it possible to preallocate length
+	// having namers of file's rows?
 	var dataSlice MemoryTable = [][]interface{}{}
 	iRow := []interface{}{}
 	f, err := os.Open(path)
@@ -205,7 +161,7 @@ func ReadAllCSV(path string) (Table, error) {
 // kind tries to identify data type
 // from string for storing it into a Go type.
 func kind(s string) featureType {
-	// FIXME to not recall converiosn methods
+	// FIXME to not recall conversion methods
 	// in the caller. Return also converted values.
 	if checkerRgxp.MatchString(s) {
 		trace.Println("clenerRgxp matched:", s)

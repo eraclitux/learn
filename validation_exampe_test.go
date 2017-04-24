@@ -9,24 +9,23 @@ import (
 
 func ExampleValidate() {
 	// Cross validation
-	rC, err := learn.LoadCSV("datasets/iris_train.csv")
+	trainSet, err := learn.ReadAllCSV("datasets/iris_train.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Load train set in memory.
-	trainSet, err := learn.Normalize(rC)
+	mu, sigma, err := learn.Normalize(trainSet, nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	rC, err = learn.LoadCSV("datasets/iris_test.csv")
+	testSet, err := learn.ReadAllCSV("datasets/iris_test.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	testSet, err := learn.Normalize(rC)
+	_, _, err = learn.Normalize(testSet, mu, sigma)
 	if err != nil {
 		log.Fatal(err)
 	}
-	clf := learn.NewkNN(trainSet, 5)
+	clf := learn.NewkNN(trainSet, 3)
 	predictedLabels, err := clf.Predict(testSet)
 	if err != nil {
 		log.Fatal(err)
@@ -40,13 +39,13 @@ func ExampleValidate() {
 	fmt.Println(report)
 
 	// OUTPUT:
-	//	versicolor(1):           5           0           2
+	//	versicolor(1):           7           0           0
 	//             setosa(2):           0           5           0
 	//          virginica(3):           0           0           3
 	//
 	//      feature | precision | recall |
-	//    virginica |       1.0 |    0.6 |
-	//   versicolor |       0.7 |    1.0 |
-	//       setosa |       1.0 |    1.0 |
-	// Overall accuracy: 0.866667
+	//    virginica |      1.00 |   1.00 |
+	//   versicolor |      1.00 |   1.00 |
+	//       setosa |      1.00 |   1.00 |
+	// Overall accuracy: 1.00
 }

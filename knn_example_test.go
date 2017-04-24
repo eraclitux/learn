@@ -8,21 +8,20 @@ import (
 )
 
 func ExampleNewkNN() {
-	rC, err := learn.LoadCSV("datasets/iris.csv")
+	trainSet, err := learn.ReadAllCSV("datasets/iris.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Load train set in memory.
-	trainSet, err := learn.Normalize(rC)
+	mu, sigma, err := learn.Normalize(trainSet, nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	clf := learn.NewkNN(trainSet, 5)
+	clf := learn.NewkNN(trainSet, 3)
 	// Categorize single sample.
-	var tab learn.MemoryTable = make([][]interface{}, 1)
-	// FIXME use Normalize after refactoring
-	tab[0] = []interface{}{0.2, 0.62, 0.07, 0.04}
-	prediction, err := clf.Predict(tab)
+	var testSet learn.MemoryTable = make([][]interface{}, 1)
+	testSet[0] = []interface{}{5.2, 3.4, 1.3, 0.1}
+	_, _, err = learn.Normalize(testSet, mu, sigma)
+	prediction, err := clf.Predict(testSet)
 	if err != nil {
 		log.Fatal(err)
 	}

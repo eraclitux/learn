@@ -50,9 +50,9 @@ func (r ValidationReport) String() string {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "%12s | %-6s | %-6s |\n", "feature", "precision", "recall")
 	for k, v := range r.Labels {
-		fmt.Fprintf(&buf, "%12s | %9.1f | %6.1f |\n", k, v.Precision, v.Recall)
+		fmt.Fprintf(&buf, "%12s | %9.2f | %6.2f |\n", k, v.Precision, v.Recall)
 	}
-	fmt.Fprintf(&buf, "Overall accuracy: %f", r.Accuracy)
+	fmt.Fprintf(&buf, "Overall accuracy: %.2f", r.Accuracy)
 	return buf.String()
 }
 

@@ -5,6 +5,7 @@
 package learn
 
 import (
+	"log"
 	"reflect"
 	"testing"
 )
@@ -175,14 +176,13 @@ func TestCreateRandomCentroids(t *testing.T) {
 }
 
 func TestKmc(t *testing.T) {
-	rC, err := LoadCSV("datasets/iris.csv")
+	data, err := ReadAllCSV("datasets/iris.csv")
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
-	// Load all data in memory.
-	data, err := Normalize(rC)
+	_, _, err = Normalize(data, nil, nil)
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 	r, err := Kmc(data, 3, nil)
 	if err != nil {

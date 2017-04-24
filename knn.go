@@ -4,6 +4,10 @@
 
 package learn
 
+import (
+	"math"
+)
+
 type Classifier interface {
 	// Predict returns a Table
 	// which stores predicted labels
@@ -53,9 +57,10 @@ type kSamples []kSample
 func newKSamples(n int) kSamples {
 	var samples kSamples = make([]kSample, n)
 	for i, _ := range samples {
+		// FIXME if nil ok ovoid this allocation
 		r := []interface{}{}
 		samples[i] = kSample{
-			distance: 1,
+			distance: math.MaxFloat64,
 			row:      r,
 		}
 	}
@@ -73,6 +78,7 @@ func (t kSamples) checkUpdate(d float64, row []interface{}) {
 			indexToChange = i
 		}
 	}
+	// FIXME is -1 check really needed?
 	if d < maxDistance && indexToChange != -1 {
 		t[indexToChange].row = row
 		t[indexToChange].distance = d

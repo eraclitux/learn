@@ -12,14 +12,13 @@ import (
 )
 
 func ExampleKmc() {
-	rC, er := learn.LoadCSV("./datasets/iris_nolabels.csv")
-	if er != nil {
-		return
+	data, err := learn.ReadAllCSV("datasets/iris_nolabels.csv")
+	if err != nil {
+		log.Fatal(err)
 	}
-	// NOTE this loads all data in memory.
-	data, er := learn.Normalize(rC)
-	if er != nil {
-		return
+	_, _, err = learn.Normalize(data, nil, nil)
+	if err != nil {
+		log.Fatal(err)
 	}
 	result, err := learn.Kmc(data, 3, nil)
 	if err != nil {

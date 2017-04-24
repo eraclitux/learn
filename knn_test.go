@@ -9,15 +9,6 @@ import (
 	"testing"
 )
 
-func TestNewKSamples(t *testing.T) {
-	samples := newKSamples(5)
-	for _, e := range samples {
-		if e.distance != 1 {
-			t.Fatal("distance != 1")
-		}
-	}
-}
-
 func TestKSamples_CheckUpdate(t *testing.T) {
 	samples := newKSamples(3)
 	expectedSamples := newKSamples(3)

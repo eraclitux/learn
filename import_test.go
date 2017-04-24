@@ -5,67 +5,74 @@
 package learn
 
 import (
-	"encoding/csv"
-	"io/ioutil"
-	"os"
-	"reflect"
-	"strings"
+	"math"
 	"testing"
+
+	"github.com/eraclitux/trace"
 )
 
-// height,weigth,choices
-var dataCSV = []byte(
-	`100.34,23,"[1,0,0,0]"
-	10.4,3,"[0,1,0,0]"
-	400.4, -67,"[0,0,0,1]"`)
-
-func TestLoadCSV(t *testing.T) {
-	tempPath := os.TempDir() + "/learn_test.csv"
-	err := ioutil.WriteFile(tempPath, dataCSV, 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		os.Remove(tempPath)
-	}()
-	r, _ := LoadCSV(tempPath)
-	if r == nil {
-		t.Fatal("empty csv reader")
-	}
-
-}
-
 func TestNormalize(t *testing.T) {
-	// [0.2306153846153846 1 1000] [0 0.7777777777777778 0100] [1 0 0001]
-	var expected MemoryTable = [][]interface{}{
+	var testCase MemoryTable = [][]interface{}{
 		[]interface{}{
-			float64(0.2306153846153846),
-			float64(1),
+			400.31,
+			1.2,
 			newCategory("[1,0,0,0]"),
 		},
 		[]interface{}{
-			float64(0),
-			float64(0.7777777777777778),
+			300.21,
+			10.2,
 			newCategory("[0,1,0,0]"),
 		},
 		[]interface{}{
-			float64(1),
-			float64(0),
+			-600.54,
+			-2.5,
 			newCategory("[0,0,0,1]"),
 		},
 	}
-	f, err := os.Open(os.DevNull)
+	// mean: 33.3266666666667 sigma: 551.221566916003
+	// mean: 2.96666666666667 sigma: 6.53171748725657
+	expectedMean := []float64{33.3266666666667, 2.96666666666667, math.NaN()}
+	expectedSigma := []float64{551.221566916003, 6.53171748725657, math.NaN()}
+	var expected MemoryTable = [][]interface{}{
+		[]interface{}{
+			0.665763742493870,
+			-0.270475058070629,
+			newCategory("[1,0,0,0]"),
+		},
+		[]interface{}{
+			0.484167074279229,
+			1.10741674719484,
+			newCategory("[0,1,0,0]"),
+		},
+		[]interface{}{
+			-1.14993081677310,
+			-0.836941689124212,
+			newCategory("[0,0,0,1]"),
+		},
+	}
+	mu, sigma, err := Normalize(testCase, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	rC := csvClosable{f, csv.NewReader(strings.NewReader(string(dataCSV)))}
-	defer rC.Close()
-	data, err := Normalize(rC)
-	if err != nil {
-		t.Fatal(err)
+	for i, row := range testCase {
+		for j, e := range row {
+			switch e.(type) {
+			case float64:
+				f := e.(float64)
+				g := expected[i][j].(float64)
+				if !floatsAreEqual(f, g) {
+					t.Errorf("%10s: %v\n %10s: %+v", "expected", g, "got", f)
+				}
+			}
+		}
 	}
-	if !reflect.DeepEqual(data, expected) {
-		t.Fatalf("expected: %v got: %v", expected, data)
-		t.Log("normalized data:", data)
+	for i, u := range mu {
+		if !floatsAreEqual(u, expectedMean[i]) {
+			t.Errorf("expected mu: %v, got: %v", expectedMean[i], u)
+		}
+		trace.Println("IsNaN:", math.IsNaN(u))
+		if !floatsAreEqual(sigma[i], expectedSigma[i]) {
+			t.Errorf("expected sigma: %v, got: %v", expectedSigma[i], sigma[i])
+		}
 	}
 }

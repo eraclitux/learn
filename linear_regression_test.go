@@ -18,7 +18,18 @@ func loadDataset(t *testing.T) Table {
 	return trainData
 }
 
-const tolerance = 1e-7
+const floatTolerance = 1e-7
+
+func floatsAreEqual(a, b float64) bool {
+	equality := false
+	if math.IsNaN(a) && math.IsNaN(b) {
+		equality = true
+	}
+	if e := math.Abs(a - b); e < floatTolerance {
+		equality = true
+	}
+	return equality
+}
 
 func TestLinearRegression_Predict(t *testing.T) {
 	trainData := loadDataset(t)
@@ -33,7 +44,8 @@ func TestLinearRegression_Predict(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if e := math.Abs(y[0] - 293081.464335); e > tolerance {
-		t.Fatal("prediction over tolerance:", e)
+	wanted := 293081.464335
+	if !floatsAreEqual(y[0], wanted) {
+		t.Fatalf("wrong prediction, want: %f got: %f\n", y[0], wanted)
 	}
 }

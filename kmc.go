@@ -58,7 +58,7 @@ func (c *category) mean(l int) {
 	c.data = c.data / uint(l)
 }
 
-// Distance returns simple matching distance from the passed Category.
+// distance returns simple matching distance from the passed Category.
 // Returning value is ∈ [0,1].
 func (c *category) distance(b *category) float64 {
 	return float64(hammingD(c.data, b.data)) / float64(c.choicesN)
