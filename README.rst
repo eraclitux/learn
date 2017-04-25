@@ -15,4 +15,4 @@ learn
 
 Machine learning algorithms for Go.
 
-Experimental, alpha quality code.
+Work in progress package, APIs are unstable and can quickly change.

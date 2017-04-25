@@ -35,7 +35,7 @@ func (lr *linearRegression) Fit(t Table) error {
 func (lr *linearRegression) Predict(t Table) ([]float64, error) {
 	// FIXME Table confuses here? use []float64
 	// and return a single float64
-	m := t.Len()
+	m, _ := t.Caps()
 	var y mat64.Dense
 	ys := make([]float64, m)
 	for i := 0; i < m; i++ {
@@ -89,7 +89,7 @@ func NewLinearRegression(Data Table) (Regression, error) {
 	// Y is the vector of observed values
 	// of dependent variable.
 	var X, Y *mat64.Dense
-	m := Data.Len()
+	m, _ := Data.Caps()
 	if m <= 0 {
 		return nil, NoData
 	}

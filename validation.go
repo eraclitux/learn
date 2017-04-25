@@ -78,7 +78,8 @@ func Validate(cm ConfMatrix) ValidationReport {
 // are taken from the last field of expect's rows.
 func ConfusionM(expect, predict Table) (ConfMatrix, error) {
 	var confMatrix = ConfMatrix{mm: make(map[string]map[string]int)}
-	for i := 0; i < expect.Len(); i++ {
+	nRows, _ := expect.Caps()
+	for i := 0; i < nRows; i++ {
 		row, err := expect.Row(i)
 		if err != nil {
 			return ConfMatrix{}, err

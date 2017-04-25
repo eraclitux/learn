@@ -25,14 +25,16 @@ type kNNClassifier struct {
 // BUG(eraclitux): if not normalized sample is passed
 // it panics, return an error.
 func (k *kNNClassifier) Predict(testData Table) (Table, error) {
-	var prediction MemoryTable = make([][]interface{}, testData.Len())
-	for j := 0; j < testData.Len(); j++ {
+	nRows, _ := testData.Caps()
+	var prediction MemoryTable = make([][]interface{}, nRows)
+	for j := 0; j < nRows; j++ {
 		testRow, err := testData.Row(j)
 		if err != nil {
 			return nil, err
 		}
 		samples := newKSamples(k.k)
-		for i := 0; i < k.trainData.Len(); i++ {
+		trainDataRows, _ := k.trainData.Caps()
+		for i := 0; i < trainDataRows; i++ {
 			trainRow, err := k.trainData.Row(i)
 			d, err := distance(testRow, trainRow, nil)
 			if err != nil {
@@ -57,7 +59,7 @@ type kSamples []kSample
 func newKSamples(n int) kSamples {
 	var samples kSamples = make([]kSample, n)
 	for i, _ := range samples {
-		// FIXME if nil ok ovoid this allocation
+		// FIXME if nil OK avoid this allocation
 		r := []interface{}{}
 		samples[i] = kSample{
 			distance: math.MaxFloat64,

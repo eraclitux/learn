@@ -43,8 +43,6 @@ func (r *KmcResult) String() string {
 type Table interface {
 	// Returns total elements.
 	Caps() (int, int)
-	// FIXME remove
-	Len() int
 	// Returns i-th row.
 	Row(int) ([]interface{}, error)
 	Update(int, []interface{}) error
@@ -53,7 +51,7 @@ type Table interface {
 	// for d.Next {d.Row()}
 	//Row() []interface{}
 	//Next() bool
-	// Usefull?
+	// Useful?
 	//NFeatures() // returns number of features?
 }
 

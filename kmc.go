@@ -186,13 +186,12 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) error
 // Normalize function can be used for that.
 func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 	// FIXME randomly centroids with zero elements are created which take to higher SSE.
-	// FIXME check for not normalized data!
-
+	nRows, _ := data.Caps()
 	// This assigns all elements to centroid 0 as default.
 	result = &KmcResult{}
-	dataMap := make([]Point, data.Len())
+	dataMap := make([]Point, nRows)
 	// Set max distance for all elements.
-	for i := 0; i < data.Len(); i++ {
+	for i := 0; i < nRows; i++ {
 		dataMap[i].Distance = 1
 	}
 	centroids := make([][]interface{}, 0)
@@ -208,7 +207,7 @@ func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 	changed := true
 	for {
 		changed = false
-		for i := 0; i < data.Len(); i++ {
+		for i := 0; i < nRows; i++ {
 			e, err := data.Row(i)
 			if err != nil {
 				er = err
