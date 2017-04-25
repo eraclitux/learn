@@ -8,12 +8,13 @@ import (
 	"math"
 )
 
+// Classifier models a classification
+// problem (binary or multi-labels).
 type Classifier interface {
 	// Predict returns a Table
 	// which stores predicted labels
-	// as single elements rows.
+	// as single fields rows.
 	Predict(Table) (Table, error)
-	//Fit() or Train()
 }
 
 type kNNClassifier struct {

@@ -24,7 +24,7 @@ const (
 	str
 )
 
-var checkerRgxp *regexp.Regexp = regexp.MustCompile(`\[(.+)\]`)
+var checkerRgxp = regexp.MustCompile(`\[(.+)\]`)
 
 // Normalize uses Table's Update()
 // to modify rows with normalized values.

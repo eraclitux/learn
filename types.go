@@ -9,13 +9,13 @@ import (
 	"fmt"
 )
 
-// NoRow should be returned in Table's Row
-// in case of problems retrieving data from underlying
-// storage.
-var NoRow error = errors.New("learn: no row with this index")
+// ErrNoData should be returned
+// in case of problems retrieving data
+// from in Table's underlying storage.
+var ErrNoData = errors.New("learn: no data")
 
-var NoData error = errors.New("learn: no data")
-
+// Point stores data about
+// kmc's points.
 type Point struct {
 	// The index of centroid to which point belongs.
 	K int
@@ -23,6 +23,8 @@ type Point struct {
 	Distance float64
 }
 
+// KmcResult stores result
+// of k mean clustering.
 // FIXME divide TotalSSE for number of samples
 // to have a smaller number.
 type KmcResult struct {
@@ -59,6 +61,7 @@ type Table interface {
 // MemoryTable is a Table that stores data in memory.
 type MemoryTable [][]interface{}
 
+// Caps implements Table's Caps.
 func (t MemoryTable) Caps() (int, int) {
 	var rows, colums int
 	if t != nil {
@@ -69,17 +72,20 @@ func (t MemoryTable) Caps() (int, int) {
 	}
 	return rows, colums
 }
-func (t MemoryTable) Len() int { return len(t) }
+
+// Row implements Table's Row.
 func (t MemoryTable) Row(i int) ([]interface{}, error) {
 	if i >= len(t) {
-		return nil, NoRow
+		return nil, ErrNoData
 	}
 	e := t[i]
 	return e, nil
 }
+
+// Update implements Table's Update.
 func (t MemoryTable) Update(i int, r []interface{}) error {
 	if i >= len(t) {
-		return NoRow
+		return ErrNoData
 	}
 	t[i] = r
 	return nil

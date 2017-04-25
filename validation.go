@@ -10,6 +10,9 @@ import (
 	"sort"
 )
 
+// ConfMatrix stores confusion matrix
+// needed to calculate precision and recall
+// for classified labels.
 type ConfMatrix struct {
 	mm map[string]map[string]int
 }
@@ -34,12 +37,16 @@ func (cm ConfMatrix) String() string {
 	return buf.String()
 }
 
+// ValidationReport stores
+// precision and recall for all the labels
+// and the overall accuracy.
 type ValidationReport struct {
-	Labels map[string]Validation
-	// Overall
+	Labels   map[string]Validation
 	Accuracy float64
 }
 
+// Validation stores validation data
+// for a single label.
 type Validation struct {
 	Precision float64
 	Recall    float64
@@ -63,7 +70,8 @@ func (r ValidationReport) String() string {
 }
 
 // Validate computes precision, recall and
-// overall accuracy.
+// overall accuracy. Used for cross-validating
+// Classifier.
 func Validate(cm ConfMatrix) ValidationReport {
 	vr := ValidationReport{
 		Labels:   make(map[string]Validation),

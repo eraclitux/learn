@@ -17,7 +17,7 @@ type pinvCase struct {
 	test, expected []float64
 }
 
-var pinvCases []pinvCase = []pinvCase{
+var pinvCases = []pinvCase{
 	{
 		// NOTE this is a singular matrix.
 		3, 3,

@@ -11,6 +11,8 @@ import (
 	"github.com/gonum/matrix/mat64"
 )
 
+// Regression models a regression
+// problem.
 type Regression interface {
 	Fit(Table) error
 	Predict(Table) ([]float64, error)
@@ -21,6 +23,7 @@ type linearRegression struct {
 }
 
 // Fit updates training data.
+// BUG(eraclitux): not implemented
 func (lr *linearRegression) Fit(t Table) error {
 	return nil
 }
@@ -34,7 +37,7 @@ func (lr *linearRegression) Fit(t Table) error {
 // Features must be stored as float64 in Table.
 func (lr *linearRegression) Predict(t Table) ([]float64, error) {
 	// FIXME Table confuses here? use []float64
-	// and return a single float64
+	// and return a single float64?
 	m, _ := t.Caps()
 	var y mat64.Dense
 	ys := make([]float64, m)
@@ -91,11 +94,11 @@ func NewLinearRegression(Data Table) (Regression, error) {
 	var X, Y *mat64.Dense
 	m, _ := Data.Caps()
 	if m <= 0 {
-		return nil, NoData
+		return nil, ErrNoData
 	}
 	s1, err := Data.Row(0)
 	if err != nil {
-		return nil, NoData
+		return nil, ErrNoData
 	}
 	// o = n+1 because table stores
 	// values of y in the last column.
@@ -109,7 +112,7 @@ func NewLinearRegression(Data Table) (Regression, error) {
 		row := make([]float64, o)
 		r, err := Data.Row(i)
 		if err != nil {
-			return nil, NoData
+			return nil, ErrNoData
 		}
 		// x0
 		row[0] = 1

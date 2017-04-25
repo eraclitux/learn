@@ -231,7 +231,7 @@ func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 		}
 		err := moveCentroids(centroids, dataMap, data)
 		if err != nil {
-			err = err
+			er = err
 			return
 		}
 		trace.Println("centroids moved", centroids)
