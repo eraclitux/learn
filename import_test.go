@@ -13,17 +13,17 @@ import (
 
 func TestNormalize(t *testing.T) {
 	var testCase MemoryTable = [][]interface{}{
-		[]interface{}{
+		{
 			400.31,
 			1.2,
 			newCategory("[1,0,0,0]"),
 		},
-		[]interface{}{
+		{
 			300.21,
 			10.2,
 			newCategory("[0,1,0,0]"),
 		},
-		[]interface{}{
+		{
 			-600.54,
 			-2.5,
 			newCategory("[0,0,0,1]"),
@@ -34,17 +34,17 @@ func TestNormalize(t *testing.T) {
 	expectedMean := []float64{33.3266666666667, 2.96666666666667, math.NaN()}
 	expectedSigma := []float64{551.221566916003, 6.53171748725657, math.NaN()}
 	var expected MemoryTable = [][]interface{}{
-		[]interface{}{
+		{
 			0.665763742493870,
 			-0.270475058070629,
 			newCategory("[1,0,0,0]"),
 		},
-		[]interface{}{
+		{
 			0.484167074279229,
 			1.10741674719484,
 			newCategory("[0,1,0,0]"),
 		},
-		[]interface{}{
+		{
 			-1.14993081677310,
 			-0.836941689124212,
 			newCategory("[0,0,0,1]"),

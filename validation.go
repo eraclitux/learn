@@ -18,7 +18,7 @@ type ConfMatrix struct {
 func (cm ConfMatrix) String() string {
 	// FIXME deal with mm == nil
 	labels := make([]string, 0, len(cm.mm))
-	for k, _ := range cm.mm {
+	for k := range cm.mm {
 		labels = append(labels, k)
 
 	}
@@ -105,7 +105,7 @@ func ConfusionM(expect, predict Table) (ConfMatrix, error) {
 	}
 	// get all labels
 	labels := make([]string, 0, len(confMatrix.mm))
-	for k, _ := range confMatrix.mm {
+	for k := range confMatrix.mm {
 		labels = append(labels, k)
 
 	}

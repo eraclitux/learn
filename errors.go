@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-// unknownType assembles an appropiate error
+// unknownType assembles an appropriate error
 // for unrecognized types.
 func unknownType(args ...interface{}) error {
 	return errors.New("unrecognized type: " + fmt.Sprint(args...))

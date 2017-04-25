@@ -58,7 +58,7 @@ type kSamples []kSample
 // with maximum distance.
 func newKSamples(n int) kSamples {
 	var samples kSamples = make([]kSample, n)
-	for i, _ := range samples {
+	for i := range samples {
 		// FIXME if nil OK avoid this allocation
 		r := []interface{}{}
 		samples[i] = kSample{
