@@ -22,15 +22,15 @@ func (cm ConfMatrix) String() string {
 		labels = append(labels, k)
 
 	}
-	strMatrix := ""
+	var buf bytes.Buffer
 	for i, l := range labels {
-		strMatrix += fmt.Sprintf("%18s(%d):", l, i+1)
+		fmt.Fprintf(&buf, "%18s(%d):", l, i+1)
 		for _, j := range labels {
-			strMatrix += fmt.Sprintf("%12d", cm.mm[l][j])
+			fmt.Fprintf(&buf, "%12d", cm.mm[l][j])
 		}
-		strMatrix += "\n"
+		fmt.Fprintf(&buf, "\n")
 	}
-	return strMatrix
+	return buf.String()
 }
 
 type ValidationReport struct {
