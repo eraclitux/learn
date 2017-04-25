@@ -7,21 +7,22 @@ package learn
 import (
 	"bytes"
 	"fmt"
+	"sort"
 )
 
 type ConfMatrix struct {
 	mm map[string]map[string]int
 }
 
-// BUG(eraclitux): order labels to
-// have a predictable output.
 func (cm ConfMatrix) String() string {
 	// FIXME deal with mm == nil
 	labels := make([]string, 0, len(cm.mm))
 	for k := range cm.mm {
 		labels = append(labels, k)
-
 	}
+	// Sort labels to have
+	// a predictable output.
+	sort.Sort(sort.StringSlice(labels))
 	var buf bytes.Buffer
 	for i, l := range labels {
 		fmt.Fprintf(&buf, "%18s(%d):", l, i+1)
@@ -44,13 +45,18 @@ type Validation struct {
 	Recall    float64
 }
 
-// BUG(eraclitux): order labels to
-// have a predictable output.
 func (r ValidationReport) String() string {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "%12s | %-6s | %-6s |\n", "feature", "precision", "recall")
-	for k, v := range r.Labels {
-		fmt.Fprintf(&buf, "%12s | %9.2f | %6.2f |\n", k, v.Precision, v.Recall)
+	// Sort labels to have
+	// a predictable output.
+	labels := make([]string, 0, len(r.Labels))
+	for k := range r.Labels {
+		labels = append(labels, k)
+	}
+	sort.Sort(sort.StringSlice(labels))
+	for _, l := range labels {
+		fmt.Fprintf(&buf, "%12s | %9.2f | %6.2f |\n", l, r.Labels[l].Precision, r.Labels[l].Recall)
 	}
 	fmt.Fprintf(&buf, "Overall accuracy: %.2f", r.Accuracy)
 	return buf.String()

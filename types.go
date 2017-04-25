@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-// NoRow error should be returned in Table's Row
+// NoRow should be returned in Table's Row
 // in case of problems retrieving data from underlying
 // storage.
 var NoRow error = errors.New("learn: no row with this index")
@@ -23,7 +23,7 @@ type Point struct {
 	Distance float64
 }
 
-// BUG(eraclitux): divide TotalSSE for number of samples
+// FIXME divide TotalSSE for number of samples
 // to have a smaller number.
 type KmcResult struct {
 	Map       []Point
@@ -41,7 +41,8 @@ func (r *KmcResult) String() string {
 
 // Table models tabular data.
 type Table interface {
-	// Returns total elements.
+	// Returns rows
+	// and columns numbers.
 	Caps() (int, int)
 	// Returns i-th row.
 	Row(int) ([]interface{}, error)

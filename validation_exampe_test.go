@@ -43,13 +43,13 @@ func ExampleValidate() {
 	fmt.Println(report)
 
 	// OUTPUT:
-	//	versicolor(1):           7           0           0
-	//             setosa(2):           0           5           0
+	//             setosa(1):           5           0           0
+	//         versicolor(2):           0           7           0
 	//          virginica(3):           0           0           3
 	//
 	//      feature | precision | recall |
-	//    virginica |      1.00 |   1.00 |
-	//   versicolor |      1.00 |   1.00 |
 	//       setosa |      1.00 |   1.00 |
+	//   versicolor |      1.00 |   1.00 |
+	//    virginica |      1.00 |   1.00 |
 	// Overall accuracy: 1.00
 }

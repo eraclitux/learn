@@ -22,8 +22,6 @@ type kNNClassifier struct {
 }
 
 // Predict calculates category for each element in testData.
-// BUG(eraclitux): if not normalized sample is passed
-// it panics, return an error.
 func (k *kNNClassifier) Predict(testData Table) (Table, error) {
 	nRows, _ := testData.Caps()
 	var prediction MemoryTable = make([][]interface{}, nRows)
