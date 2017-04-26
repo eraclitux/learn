@@ -6,24 +6,23 @@ package learn
 
 import (
 	"math"
+
+	kdtree "github.com/hongshibao/go-kdtree"
 )
 
 // Classifier models a classification
 // problem (binary or multi-labels).
 type Classifier interface {
-	// Predict returns a Table
-	// which stores predicted labels
-	// as single fields rows.
-	Predict(Table) (Table, error)
+	Predict(Table) (Table, error) // Returns a Table with predicted labels as rows.
 }
 
-type kNNClassifier struct {
+type kNNBruteForceCls struct {
 	trainData Table
 	k         int
 }
 
 // Predict calculates category for each element in testData.
-func (k *kNNClassifier) Predict(testData Table) (Table, error) {
+func (k *kNNBruteForceCls) Predict(testData Table) (Table, error) {
 	nRows, _ := testData.Caps()
 	var prediction MemoryTable = make([][]interface{}, nRows)
 	for j := 0; j < nRows; j++ {
@@ -44,6 +43,75 @@ func (k *kNNClassifier) Predict(testData Table) (Table, error) {
 		prediction[j] = []interface{}{samples.getNearest()}
 	}
 	return prediction, nil
+}
+
+type kNNkdTreeCls struct {
+	tree *kdtree.KDTree
+	k    int
+}
+
+// Predict calculates category for each element in testData.
+func (k *kNNkdTreeCls) Predict(testData Table) (Table, error) {
+	nRows, _ := testData.Caps()
+	var prediction MemoryTable = make([][]interface{}, nRows)
+	for j := 0; j < nRows; j++ {
+		testRow, err := testData.Row(j)
+		if err != nil {
+			return nil, err
+		}
+		targetPoint := makeKDTreePoint(testRow)
+		neighbours := k.tree.KNN(targetPoint, k.k)
+		prediction[j] = []interface{}{nearestLabelInTree(neighbours)}
+	}
+	return prediction, nil
+}
+
+func nearestLabelInTree(neighbours []kdtree.Point) string {
+	m := make(map[string]int)
+	for _, n := range neighbours {
+		label := n.(*kdTreePoint).label
+		if _, ok := m[label]; ok {
+			m[label]++
+		} else {
+			m[label] = 1
+		}
+	}
+	max := 0
+	label := ""
+	for k, v := range m {
+		if v > max {
+			label = k
+			max = v
+		}
+	}
+	return label
+}
+
+// NewkNN returns a new kNN Classifier.
+// Labels must be stored as last field in Table's rows.
+//
+// Given m number of training samples and n their number of features,
+// if m < 100 brute force is used, otherwise a k-d tree
+// is built.
+// Brute force implementation is at least O(n*m) but if m is low
+// should be a better choice as avoids tree building overhead.
+// Search in k-d tree is (n*log(m)) but
+// when n > ~20 k-d tree could become O(n*m).
+//
+// BUG(eraclitux): categorical features are used with brute force
+// but not with k-d tree.
+func NewkNN(trainData Table, k int) (Classifier, error) {
+	// FIXME 100 is arbitrary,
+	// algorithm to use
+	// should be based on m and n,
+	// not just m.
+	// Use benchmarks to find (m, n)
+	// brute force or k-d tree.
+	nRows, _ := trainData.Caps()
+	if nRows < 100 {
+		return bruteForcekNN(trainData, k)
+	}
+	return kdTreekNN(trainData, k)
 }
 
 type kSample struct {
@@ -112,14 +180,79 @@ func (t kSamples) getNearest() string {
 	return label
 }
 
-// NewkNN returns a new kNN Classifier.
-// Categories must be stored as last field in Table's rows.
-//
-// Given m number of training samples and n their number of features,
-// current brute force implemetation is at least O(nm²).
-func NewkNN(trainData Table, k int) Classifier {
-	return &kNNClassifier{
+type kdTreePoint struct {
+	kdtree.Point
+	features []float64
+	label    string
+}
+
+func makeKDTreePoint(row []interface{}) *kdTreePoint {
+	// TODO optimization: preallocate this somehow?
+	features := []float64{}
+	var label string
+	for i, e := range row {
+		switch v := e.(type) {
+		// FIXME categorical?
+		case float64:
+			features = append(features, v)
+		case string:
+			// Last element in row
+			// is the sample's label.
+			if i == len(row)-1 {
+				label = v
+			}
+		default:
+			// Ignore non numerical features.
+			continue
+		}
+	}
+	return &kdTreePoint{
+		features: features,
+		label:    label,
+	}
+}
+
+func (p *kdTreePoint) Dim() int {
+	return len(p.features)
+}
+
+func (p *kdTreePoint) GetValue(i int) float64 {
+	return p.features[i]
+}
+
+func (p *kdTreePoint) Distance(other kdtree.Point) float64 {
+	var res float64
+	for i := 0; i < p.Dim(); i++ {
+		tmp := p.GetValue(i) - other.GetValue(i)
+		res += tmp * tmp
+	}
+	return res
+}
+
+func (p *kdTreePoint) PlaneDistance(val float64, i int) float64 {
+	tmp := p.GetValue(i) - val
+	return tmp * tmp
+}
+
+func bruteForcekNN(trainData Table, k int) (*kNNBruteForceCls, error) {
+	return &kNNBruteForceCls{
 		trainData: trainData,
 		k:         k,
+	}, nil
+}
+
+func kdTreekNN(trainData Table, k int) (*kNNkdTreeCls, error) {
+	nRows, _ := trainData.Caps()
+	points := make([]kdtree.Point, nRows)
+	for i := 0; i < nRows; i++ {
+		row, err := trainData.Row(i)
+		if err != nil {
+			return nil, err
+		}
+		points[i] = makeKDTreePoint(row)
 	}
+	return &kNNkdTreeCls{
+		tree: kdtree.NewKDTree(points),
+		k:    k,
+	}, nil
 }

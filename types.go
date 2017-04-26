@@ -9,18 +9,16 @@ import (
 	"fmt"
 )
 
-// ErrNoData should be returned
+// ErrNoData is returned
 // in case of problems retrieving data
-// from in Table's underlying storage.
+// from Table's underlying storage.
 var ErrNoData = errors.New("learn: no data")
 
 // Point stores data about
 // kmc's points.
 type Point struct {
-	// The index of centroid to which point belongs.
-	K int
-	// Distance from centroid.
-	Distance float64
+	K        int     // The index of centroid to which point belongs.
+	Distance float64 // Distance from centroid.
 }
 
 // KmcResult stores result
@@ -30,8 +28,7 @@ type Point struct {
 type KmcResult struct {
 	Map       []Point
 	Centroids [][]interface{}
-	// Sum of squared errors
-	TotalSSE float64
+	TotalSSE  float64 // Sum of squared errors
 }
 
 func (r *KmcResult) String() string {
@@ -43,19 +40,9 @@ func (r *KmcResult) String() string {
 
 // Table models tabular data.
 type Table interface {
-	// Returns rows
-	// and columns numbers.
-	Caps() (int, int)
-	// Returns i-th row.
-	Row(int) ([]interface{}, error)
-	Update(int, []interface{}) error
-	//Headers() []string
-	// Maybe useful in future:
-	// for d.Next {d.Row()}
-	//Row() []interface{}
-	//Next() bool
-	// Useful?
-	//NFeatures() // returns number of features?
+	Caps() (int, int)                    // Returns rows and columns numbers.
+	Row(i int) ([]interface{}, error)    // Returns i-th row.
+	Update(i int, r []interface{}) error // Substitutes i-th row with r.
 }
 
 // MemoryTable is a Table that stores data in memory.

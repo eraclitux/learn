@@ -7,8 +7,6 @@ package learn
 import (
 	"math"
 	"testing"
-
-	"github.com/eraclitux/trace"
 )
 
 func TestNormalize(t *testing.T) {
@@ -70,7 +68,6 @@ func TestNormalize(t *testing.T) {
 		if !floatsAreEqual(u, expectedMean[i]) {
 			t.Errorf("expected mu: %v, got: %v", expectedMean[i], u)
 		}
-		trace.Println("IsNaN:", math.IsNaN(u))
 		if !floatsAreEqual(sigma[i], expectedSigma[i]) {
 			t.Errorf("expected sigma: %v, got: %v", expectedSigma[i], sigma[i])
 		}

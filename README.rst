@@ -13,6 +13,6 @@ learn
 .. |image2| image:: https://goreportcard.com/badge/github.com/eraclitux/learn
 .. _image2: https://goreportcard.com/report/github.com/eraclitux/learn
 
-Machine learning algorithms for Go.
+Machine learning for Go.
 
 Work in progress package, APIs are unstable and can quickly change.

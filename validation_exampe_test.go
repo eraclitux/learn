@@ -29,7 +29,10 @@ func ExampleValidate() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	clf := learn.NewkNN(trainSet, 3)
+	clf, err := learn.NewkNN(trainSet, 3)
+	if err != nil {
+		log.Fatal(err)
+	}
 	predictedLabels, err := clf.Predict(testSet)
 	if err != nil {
 		log.Fatal(err)

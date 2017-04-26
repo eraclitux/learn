@@ -20,11 +20,17 @@ func ExampleNewkNN() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	clf := learn.NewkNN(trainSet, 3)
+	clf, err := learn.NewkNN(trainSet, 3)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// Categorize single sample.
 	var testSet learn.MemoryTable = make([][]interface{}, 1)
 	testSet[0] = []interface{}{5.2, 3.4, 1.3, 0.1}
 	_, _, err = learn.Normalize(testSet, mu, sigma)
+	if err != nil {
+		log.Fatal(err)
+	}
 	prediction, err := clf.Predict(testSet)
 	if err != nil {
 		log.Fatal(err)

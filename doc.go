@@ -2,7 +2,7 @@
 // Use of this source code is governed by MIT license
 // which that can be found in the LICENSE.txt file.
 
-// Package learn exposes some machine learning algorithms.
+// Package learn exposes machine learning functionalities.
 //
 // Regression:
 //

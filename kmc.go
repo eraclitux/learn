@@ -11,8 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/eraclitux/trace"
 )
 
 // category models a categorical (aka nominal es choices A,B etc) feature.
@@ -159,7 +157,6 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) error
 	}
 	for k := 0; k < len(centroids); k++ {
 		if eleMap[k] == 0 {
-			trace.Println(k, "is a zero element centroid, not zeroing")
 			continue
 		}
 		zeroCentroid(centroids[k])
@@ -234,7 +231,6 @@ func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 			er = err
 			return
 		}
-		trace.Println("centroids moved", centroids)
 	}
 	for _, p := range dataMap {
 		result.TotalSSE += math.Pow(p.Distance, 2)

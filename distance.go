@@ -47,11 +47,13 @@ func elementsDistance(a1, a2 interface{}) (d float64, er error) {
 // distance calculates distance between
 // two different rows using average of single elements
 // distance to account heterogeneous data.
+// Some feature are ignored (es string).
 func distance(s, v []interface{}, weights []float64) (float64, error) {
 	// FIXME check that ∈ of weights are <=1
 	var total float64
 	// Some feature are ignored (es string)
-	// we cannot use len(s) to calculate the average.
+	// so we cannot use len(s) to calculate
+	// the average.
 	var numFeatures float64
 	for i, e := range s {
 		// FIXME refactor with type switch
