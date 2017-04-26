@@ -14,7 +14,6 @@ import (
 // Regression models a regression
 // problem.
 type Regression interface {
-	Fit(Table) error
 	Predict(Table) ([]float64, error)
 }
 
@@ -22,13 +21,7 @@ type linearRegression struct {
 	theta mat64.Matrix
 }
 
-// Fit updates training data.
-// BUG(eraclitux): not implemented
-func (lr *linearRegression) Fit(t Table) error {
-	return nil
-}
-
-// Predict given a Table with feature set to predict in its rows:
+// Predict given a Table with samples in its rows:
 // 	x1 x2 ... xn
 //	...
 // 	x1 x2 ... xn
