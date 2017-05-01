@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
+
+	"github.com/eraclitux/trace"
 )
 
 // ConfMatrix stores confusion matrix
@@ -102,19 +104,21 @@ func ConfusionM(expect, predict Table) (ConfMatrix, error) {
 		if err != nil {
 			return ConfMatrix{}, err
 		}
-		expectedLabel, ok := row[len(row)-1].(string)
+		trace.Println("expected", row)
+		trace.Println("predicted", pRow)
+		expectedLabel, ok := row[len(row)-1].(*category)
 		if !ok {
-			return ConfMatrix{}, fmt.Errorf("learn: %v is not a string", expectedLabel)
+			return ConfMatrix{}, fmt.Errorf("learn: %v is not a category", row[len(row)-1])
 		}
 		predictedLabel, ok := pRow[0].(string)
 		if !ok {
-			return ConfMatrix{}, fmt.Errorf("learn: %v is not a string", predictedLabel)
+			return ConfMatrix{}, fmt.Errorf("learn: %v is not a string", row[len(row)-1])
 		}
-		if m, ok := confMatrix.mm[expectedLabel]; ok {
+		if m, ok := confMatrix.mm[expectedLabel.label]; ok {
 			m[predictedLabel]++
 		} else {
-			confMatrix.mm[expectedLabel] = make(map[string]int)
-			confMatrix.mm[expectedLabel][predictedLabel]++
+			confMatrix.mm[expectedLabel.label] = make(map[string]int)
+			confMatrix.mm[expectedLabel.label][predictedLabel]++
 		}
 	}
 	// get all labels

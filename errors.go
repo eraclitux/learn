@@ -5,12 +5,14 @@
 package learn
 
 import (
-	"errors"
 	"fmt"
 )
 
-// unknownType assembles an appropriate error
-// for unrecognized types.
-func unknownType(args ...interface{}) error {
-	return errors.New("unrecognized type: " + fmt.Sprint(args...))
+// unknownTypeErr assembles an error
+// for unrecognized type of feature.
+func unknownTypeErr(a interface{}) error {
+	return fmt.Errorf("learn: type of \"%v\" must be float or string not %T", a, a)
+}
+func typeMismatchErr(a, b interface{}) error {
+	return fmt.Errorf("learn: type mismatch in features \"v\" \"v\"\n", a, b)
 }

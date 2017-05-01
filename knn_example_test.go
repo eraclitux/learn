@@ -16,7 +16,7 @@ func ExampleNewkNN() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	mu, sigma, err := learn.Normalize(trainSet, nil, nil)
+	mu, sigma, catSet, err := learn.Normalize(trainSet, nil, nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,7 +27,7 @@ func ExampleNewkNN() {
 	// Categorize single sample.
 	var testSet learn.MemoryTable = make([][]interface{}, 1)
 	testSet[0] = []interface{}{5.2, 3.4, 1.3, 0.1}
-	_, _, err = learn.Normalize(testSet, mu, sigma)
+	_, _, _, err = learn.Normalize(testSet, mu, sigma, catSet)
 	if err != nil {
 		log.Fatal(err)
 	}

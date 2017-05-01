@@ -17,7 +17,7 @@ func ExampleValidate() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	mu, sigma, err := learn.Normalize(trainSet, nil, nil)
+	mu, sigma, stringFeature, err := learn.Normalize(trainSet, nil, nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func ExampleValidate() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, _, err = learn.Normalize(testSet, mu, sigma)
+	_, _, _, err = learn.Normalize(testSet, mu, sigma, stringFeature)
 	if err != nil {
 		log.Fatal(err)
 	}

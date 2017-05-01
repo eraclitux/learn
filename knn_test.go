@@ -8,6 +8,7 @@ package learn
 // go test -run NONE -bench . -benchmem
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -15,6 +16,7 @@ import (
 func TestKSamples_CheckUpdate(t *testing.T) {
 	samples := newKSamples(3)
 	expectedSamples := newKSamples(3)
+	// FIXME converte string category
 	row := []interface{}{0.2, 0.4, 0.1, "one"}
 	samples.checkUpdate(0.9, row)
 	row = []interface{}{0.2, 0.4, 0.1, "one"}
@@ -48,38 +50,40 @@ func TestKSamples_CheckUpdate(t *testing.T) {
 
 func TestKSamples_GetNearest(t *testing.T) {
 	samples := newKSamples(5)
-	row := []interface{}{0.2, 0.4, 0.1, "one"}
+	row := []interface{}{0.2, 0.4, 0.1, newCategory("one", nil)}
 	samples.checkUpdate(0.5, row)
-	row = []interface{}{0.1, 0.3, 0.0, "one"}
+	row = []interface{}{0.1, 0.3, 0.0, newCategory("one", nil)}
 	samples.checkUpdate(0.5, row)
-	row = []interface{}{0.1, 0.3, 0.0, "two"}
+	row = []interface{}{0.1, 0.3, 0.0, newCategory("two", nil)}
 	samples.checkUpdate(0.4, row)
-	row = []interface{}{0.14, 0.33, 0.23, "two"}
+	row = []interface{}{0.14, 0.33, 0.23, newCategory("two", nil)}
 	samples.checkUpdate(0.6, row)
-	row = []interface{}{0.13, 0.33, 0.23, "two"}
+	row = []interface{}{0.13, 0.33, 0.23, newCategory("two", nil)}
 	samples.checkUpdate(0.6, row)
 
 	nearest := samples.getNearest()
-
 	if nearest != "two" {
 		t.Fatal("nearest:", nearest)
 	}
 }
 
-func loadTestSet(t *testing.T) (Table, []float64, []float64) {
-	trainSet, err := ReadAllCSV("datasets/iris.csv")
+func loadTrainSet(t *testing.T, set string) (Table, []float64, []float64, []string) {
+	path := fmt.Sprintf("datasets/%s.csv", set)
+	trainSet, err := ReadAllCSV(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	mu, sigma, err := Normalize(trainSet, nil, nil)
+	mu, sigma, catSet, err := Normalize(trainSet, nil, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return trainSet, mu, sigma
+	return trainSet, mu, sigma, catSet
 }
 
-func TestBruteForcekNN(t *testing.T) {
-	trainSet, mu, sigma := loadTestSet(t)
+// Test bruteForcekNN using dataset with
+// a numerical only features.
+func TestBruteForcekNN_numerical(t *testing.T) {
+	trainSet, mu, sigma, catSet := loadTrainSet(t, "iris")
 	clf, err := bruteForcekNN(trainSet, 3)
 	if err != nil {
 		t.Fatal(err)
@@ -87,7 +91,7 @@ func TestBruteForcekNN(t *testing.T) {
 	// Categorize single sample.
 	var testSet MemoryTable = make([][]interface{}, 1)
 	testSet[0] = []interface{}{5.2, 3.4, 1.3, 0.1}
-	_, _, err = Normalize(testSet, mu, sigma)
+	_, _, _, err = Normalize(testSet, mu, sigma, catSet)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,8 +109,39 @@ func TestBruteForcekNN(t *testing.T) {
 	}
 }
 
+// Test bruteForcekNN using dataset with
+// numerical and categorical features.
+func TestBruteForcekNN_mixed(t *testing.T) {
+	trainSet, mu, sigma, catSet := loadTrainSet(t, "adult_train")
+	clf, err := bruteForcekNN(trainSet, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Categorize single sample.
+	var testSet MemoryTable = make([][]interface{}, 1)
+	testSet[0] = []interface{}{
+		25.0, "Private", 226802.0, "11th", 7.0, "Never-married", "Machine-op-inspct", "Own-child", "Black", "Male", 0.0, 0.0, 40.0, "United-States",
+	}
+	_, _, _, err = Normalize(testSet, mu, sigma, catSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	prediction, err := clf.Predict(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := prediction.Row(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "<=50K"
+	if r[0] != expected {
+		t.Errorf("want: %s, got: %s", expected, r[0])
+	}
+}
+
 func TestKdTreekNN(t *testing.T) {
-	trainSet, mu, sigma := loadTestSet(t)
+	trainSet, mu, sigma, catSet := loadTrainSet(t, "iris")
 	clf, err := kdTreekNN(trainSet, 3)
 	if err != nil {
 		t.Fatal(err)
@@ -114,7 +149,7 @@ func TestKdTreekNN(t *testing.T) {
 	// Categorize single sample.
 	var testSet MemoryTable = make([][]interface{}, 1)
 	testSet[0] = []interface{}{5.2, 3.4, 1.3, 0.1}
-	_, _, err = Normalize(testSet, mu, sigma)
+	_, _, _, err = Normalize(testSet, mu, sigma, catSet)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,14 +175,14 @@ func BenchmarkNN(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	mu, sigma, err := Normalize(trainSet, nil, nil)
+	mu, sigma, catSet, err := Normalize(trainSet, nil, nil, nil)
 	if err != nil {
 		b.Fatal(err)
 	}
 	// Categorize single sample.
 	var testSet MemoryTable = make([][]interface{}, 1)
 	testSet[0] = []interface{}{5.2, 3.4, 1.3, 0.1}
-	_, _, err = Normalize(testSet, mu, sigma)
+	_, _, _, err = Normalize(testSet, mu, sigma, catSet)
 	// Benchmark classifier creation
 	// and prediction.
 	b.Run("kdTree", func(b *testing.B) {

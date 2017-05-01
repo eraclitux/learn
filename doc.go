@@ -8,36 +8,21 @@
 //
 //	- linear regression
 //
-// Clustering:
-//
-//	- k means clustering
-//
 // Classification:
 //
 //	- kNN
 //
-// K means clustering
+// Clustering:
 //
-// Categorical and numerical features are supported.
-//
-// Method for distance calculation is automatically
-// chosen at runtime:
-//
-// - Manhattan for numerical features
-//
-// - Hamming distance for categorical features
+//	- k means clustering
 //
 // Example of data
 //
-//	Hours	Choices		Stars	Price
-//	12,	"A,C",		5,	15.10
-//	1,	"D"		1,	1
+// Categorical and numerical features are supported in knn and kmc.
 //
-// Categorical features must be translated to an array of 0 and 1:
-//
-//	Hours	Choices		Stars	Price
-//	12,	"[1,0,1,0]",	5,	15.10
-//	1,	"[0,0,0,1]"	1,	1
+//	Hours	Status		Stars	Price
+//	12,	"good",		5,	15.10
+//	1,	"bad"		1,	1
 //
 // Work in progress package, APIs are unstable
 // and can quickly change.

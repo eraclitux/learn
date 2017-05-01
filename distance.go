@@ -4,7 +4,10 @@
 
 package learn
 
-import "math"
+import (
+	"errors"
+	"math"
+)
 
 func hammingD(a, b uint) uint {
 	var dist uint
@@ -30,39 +33,42 @@ func euclidean(a, b float64) float64 {
 }
 
 // elementsDistance returns distance for two elements of same type
-// (quantitative, nominal, cardinal, binary).
+// (quantitative or categorical).
 func elementsDistance(a1, a2 interface{}) (d float64, er error) {
-	// TODO add Geo type of lat/long with distance (http://www.movable-type.co.uk/scripts/latlong.html)
-	switch a1.(type) {
+	switch v1 := a1.(type) {
 	case float64:
-		return manhattan(a1.(float64), a2.(float64)), nil
-		//return euclidean(a1.(float64), a2.(float64)), nil
+		v2, ok := a2.(float64)
+		if !ok {
+			return -1, typeMismatchErr(a1, a2)
+		}
+		return manhattan(v1, v2), nil
+		//return euclidean(v1, v2), nil
 	case *category:
-		return a1.(*category).distance(a2.(*category)), nil
+		v2, ok := a2.(*category)
+		if !ok {
+			return -1, typeMismatchErr(a1, a2)
+		}
+		//trace.Println("cat distance", v1.distance(v2))
+		return v1.distance(v2), nil
 	default:
-		return -1, unknownType(a1)
+		return -1, unknownTypeErr(a1)
 	}
 }
 
 // distance calculates distance between
 // two different rows using average of single elements
-// distance to account heterogeneous data.
-// Some feature are ignored (es string).
-func distance(s, v []interface{}, weights []float64) (float64, error) {
+// distance to account heterogeneous
+// features (numerical & categorical).
+// Last element in trainRow
+// is considered label if its type is category.
+func distance(testRow, trainRow []interface{}, weights []float64) (float64, error) {
 	// FIXME check that ∈ of weights are <=1
+	if len(trainRow) <= len(testRow) {
+		return math.NaN(), errors.New("learn: insufficient number of features in train sample")
+	}
 	var total float64
-	// Some feature are ignored (es string)
-	// so we cannot use len(s) to calculate
-	// the average.
-	var numFeatures float64
-	for i, e := range s {
-		// FIXME refactor with type switch
-		// or move this into elementsDistance
-		// Ignore string features.
-		if _, ok := e.(string); ok {
-			continue
-		}
-		t, err := elementsDistance(e, v[i])
+	for i, e := range testRow {
+		t, err := elementsDistance(e, trainRow[i])
 		if err != nil {
 			return -1, err
 		}
@@ -71,7 +77,7 @@ func distance(s, v []interface{}, weights []float64) (float64, error) {
 		} else {
 			total += t * weights[i]
 		}
-		numFeatures++
 	}
+	numFeatures := float64(len(testRow))
 	return total / numFeatures, nil
 }

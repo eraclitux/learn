@@ -77,3 +77,61 @@ func (t MemoryTable) Update(i int, r []interface{}) error {
 	t[i] = r
 	return nil
 }
+
+//
+// Unexposed
+//
+
+// category models a categorical feature.
+// Strings are mapped to a binary representation
+// like:
+// "foo" ->	"[0,0,1]"
+// "bar" ->	"[0,1,0]"
+// "zoo" ->	"[1,0,0]"
+type category struct {
+	data      uint
+	catNumber uint
+	label     string
+}
+
+func newCategory(k string, orderedSet []string) *category {
+	l := len(orderedSet)
+	var j uint
+	for i, e := range orderedSet {
+		if e == k {
+			j = uint(i)
+			break
+		}
+	}
+	return &category{
+		data:      j,
+		catNumber: uint(l),
+		label:     k,
+	}
+}
+
+func (c *category) add(b *category) {
+	c.data += b.data
+}
+
+func (c *category) zero() {
+	c.data = 0
+}
+
+// mean calculates mean for an element of
+// a centroid previously incremented l times.
+// TODO test for overflow, if 0b0000 & 0b111110000 != 0
+func (c *category) mean(l int) {
+	c.data = c.data / uint(l)
+}
+
+// distance returns simple matching distance
+// from the passed Category.
+// Returning value is ∈ [0,1].
+func (c *category) distance(b *category) float64 {
+	return float64(hammingD(c.data, b.data)) / float64(c.catNumber)
+}
+func (c *category) String() string {
+	format := fmt.Sprintf("%%s-%%0%db", c.catNumber)
+	return fmt.Sprintf(format, c.label, c.data)
+}

@@ -126,11 +126,9 @@ type kSamples []kSample
 func newKSamples(n int) kSamples {
 	var samples kSamples = make([]kSample, n)
 	for i := range samples {
-		// FIXME if nil OK avoid this allocation
-		r := []interface{}{}
 		samples[i] = kSample{
 			distance: math.MaxFloat64,
-			row:      r,
+			row:      nil,
 		}
 	}
 	return samples
@@ -147,8 +145,7 @@ func (t kSamples) checkUpdate(d float64, row []interface{}) {
 			indexToChange = i
 		}
 	}
-	// FIXME is -1 check really needed?
-	if d < maxDistance && indexToChange != -1 {
+	if d < maxDistance {
 		t[indexToChange].row = row
 		t[indexToChange].distance = d
 	}
@@ -161,7 +158,8 @@ func (t kSamples) getNearest() string {
 	for _, e := range t {
 		// get label as last column in row.
 		// FIXME check this assertion
-		label := e.row[len(e.row)-1].(string)
+		tmp := e.row[len(e.row)-1].(*category)
+		label := tmp.label
 		if _, ok := m[label]; ok {
 			m[label]++
 		} else {
@@ -192,18 +190,15 @@ func makeKDTreePoint(row []interface{}) *kdTreePoint {
 	var label string
 	for i, e := range row {
 		switch v := e.(type) {
-		// FIXME categorical?
 		case float64:
 			features = append(features, v)
-		case string:
+		// BUG categorical features are skipped
+		case *category:
 			// Last element in row
-			// is the sample's label.
+			// must be the sample's label.
 			if i == len(row)-1 {
-				label = v
+				label = v.label
 			}
-		default:
-			// Ignore non numerical features.
-			continue
 		}
 	}
 	return &kdTreePoint{

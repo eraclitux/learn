@@ -5,7 +5,6 @@
 package learn
 
 import (
-	"log"
 	"reflect"
 	"testing"
 )
@@ -14,12 +13,12 @@ func TestZeroCentroid(t *testing.T) {
 	toZero := []interface{}{
 		float64(0.9),
 		float64(0.3),
-		newCategory("0,1,1,0"),
+		newCategory("foo", nil),
 	}
 	zero := []interface{}{
 		0.0,
 		0.0,
-		newCategory("0,0,0,0"),
+		&category{},
 	}
 	zeroCentroid(toZero)
 	if !reflect.DeepEqual(toZero, zero) {
@@ -31,17 +30,17 @@ func TestIncrementCentroid(t *testing.T) {
 	incrementing := []interface{}{
 		float64(1),
 		float64(0.5),
-		newCategory("0,1,1,1"),
+		newCategory("0,1,1,1", nil),
 	}
 	increment := []interface{}{
 		float64(1),
 		float64(0.5),
-		newCategory("0,0,0,1"),
+		newCategory("0,0,0,1", nil),
 	}
 	expected := []interface{}{
 		float64(2),
 		float64(1),
-		newCategory("1,0,0,0"),
+		newCategory("1,0,0,0", nil),
 	}
 	if testing.Verbose() {
 		t.Logf("incrementing: %v, increment: %v\n", incrementing, increment)
@@ -59,17 +58,17 @@ func TestCenterCentroid(t *testing.T) {
 	incrementing := []interface{}{
 		float64(1),
 		float64(0.5),
-		newCategory("0,0,0,1"),
+		newCategory("0,0,0,1", nil),
 	}
 	increment := []interface{}{
 		float64(3),
 		float64(1.5),
-		newCategory("0,0,1,1"),
+		newCategory("0,0,1,1", nil),
 	}
 	expected := []interface{}{
 		float64(2),
 		float64(1),
-		newCategory("0,0,1,0"),
+		newCategory("0,0,1,0", nil),
 	}
 	incrementCentroid(incrementing, increment)
 	centerCentroid(incrementing, 2)
@@ -78,35 +77,14 @@ func TestCenterCentroid(t *testing.T) {
 	}
 }
 
-func TestHammingD(t *testing.T) {
-	cases := []struct {
-		a, b uint
-		d    uint
-	}{
-		{1, 3, 1},
-		// 100, 011
-		{4, 3, 3},
-		// 1000
-		{8, 0, 1},
-		// 10000 01111
-		{16, 15, 5},
-	}
-	for _, c := range cases {
-		d := hammingD(c.a, c.b)
-		if d != c.d {
-			t.Fatalf("wrong hamming distance: %b <> %b = %d, wants %d", c.a, c.b, d, c.d)
-		}
-	}
-}
-
 func TestCategory_Distance(t *testing.T) {
 	cases := []struct {
 		a, b     *category
 		distance float64
 	}{
-		{newCategory("1,1,1,1"), newCategory("0,0,0,0"), 1},
-		{newCategory("0,1,0,1"), newCategory("1,0,1,0"), 1},
-		{newCategory("0,0,1,1"), newCategory("0,0,0,0"), 0.5},
+		{newCategory("1,1,1,1", nil), newCategory("0,0,0,0", nil), 1},
+		{newCategory("0,1,0,1", nil), newCategory("1,0,1,0", nil), 1},
+		{newCategory("0,0,1,1", nil), newCategory("0,0,0,0", nil), 0.5},
 	}
 	for i, c := range cases {
 		d := c.a.distance(c.b)
@@ -123,19 +101,19 @@ func TestCategory_Mean(t *testing.T) {
 		mean *category
 	}{
 		{
-			newCategory("0,0,0,0"),
-			[]*category{newCategory("1,1,1,1"), newCategory("1,1,1,1")},
-			newCategory("1,1,1,1"),
+			newCategory("0,0,0,0", nil),
+			[]*category{newCategory("1,1,1,1", nil), newCategory("1,1,1,1", nil)},
+			newCategory("1,1,1,1", nil),
 		},
 		{
-			newCategory("0,0,0,0"),
-			[]*category{newCategory("0,0,1,1"), newCategory("1,1,0,0"), newCategory("1,1,0,0")},
-			newCategory("1,0,0,1"),
+			newCategory("0,0,0,0", nil),
+			[]*category{newCategory("0,0,1,1", nil), newCategory("1,1,0,0", nil), newCategory("1,1,0,0", nil)},
+			newCategory("1,0,0,1", nil),
 		},
 		{
-			newCategory("0,0,0,0"),
-			[]*category{newCategory("0,0,1,1"), newCategory("1,1,0,0"), newCategory("1,1,0,0"), newCategory("1,1,0,0")},
-			newCategory("1,0,0,1"),
+			newCategory("0,0,0,0", nil),
+			[]*category{newCategory("0,0,1,1", nil), newCategory("1,1,0,0", nil), newCategory("1,1,0,0", nil), newCategory("1,1,0,0", nil)},
+			newCategory("1,0,0,1", nil),
 		},
 	}
 	for i, c := range cases {
@@ -160,7 +138,7 @@ func TestCreateRandCategory(t *testing.T) {
 func TestCreateRandomCentroids(t *testing.T) {
 	f := []interface{}{
 		float64(1),
-		newCategory("[1,0,0,0]"),
+		newCategory("[1,0,0,0]", nil),
 	}
 	a, err := createRandomCentroids(4, f)
 	if err != nil {
@@ -178,15 +156,15 @@ func TestCreateRandomCentroids(t *testing.T) {
 func TestKmc(t *testing.T) {
 	data, err := ReadAllCSV("datasets/iris.csv")
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
-	_, _, err = Normalize(data, nil, nil)
+	_, _, _, err = Normalize(data, nil, nil, nil)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 	r, err := Kmc(data, 3, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(r)
+	t.Log("kmc result:", r)
 }

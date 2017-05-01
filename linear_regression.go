@@ -7,7 +7,6 @@ package learn
 import (
 	"errors"
 
-	"github.com/eraclitux/trace"
 	"github.com/gonum/matrix/mat64"
 )
 
@@ -47,15 +46,15 @@ func (lr *linearRegression) Predict(t Table) ([]float64, error) {
 		for i, e := range row {
 			f, ok := e.(float64)
 			if !ok {
-				return nil, unknownType(f)
+				return nil, unknownTypeErr(f)
 			}
 			a[i+1] = f
 		}
 		X := mat64.NewDense(1, n, a)
 		// y is a (1 x 1) matrix
 		y.Mul(X, lr.theta)
-		fT := mat64.Formatted(X)
-		trace.Printf("X:\n%v\n", fT)
+		//fT := mat64.Formatted(X)
+		//trace.Printf("X:\n%v\n", fT)
 		ys[i] = y.At(0, 0)
 	}
 	return ys, nil
@@ -111,7 +110,7 @@ func NewLinearRegression(Data Table) (Regression, error) {
 		row[0] = 1
 		for j, e := range r {
 			if f, ok := e.(float64); !ok {
-				return nil, unknownType(e)
+				return nil, unknownTypeErr(e)
 			} else {
 				if j >= o {
 					return nil, errors.New("index out of range")
@@ -136,8 +135,8 @@ func NewLinearRegression(Data Table) (Regression, error) {
 		return nil, err
 	}
 	Theta.Product(Pi, X.T(), Y)
-	fT := mat64.Formatted(Theta)
-	trace.Printf("Theta:\n%v\n", fT)
+	//fT := mat64.Formatted(Theta)
+	//trace.Printf("Theta:\n%v\n", fT)
 	return &linearRegression{
 		theta: Theta,
 	}, nil

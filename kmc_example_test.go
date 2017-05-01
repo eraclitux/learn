@@ -16,7 +16,7 @@ func ExampleKmc() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, _, err = learn.Normalize(data, nil, nil)
+	_, _, _, err = learn.Normalize(data, nil, nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
