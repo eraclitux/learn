@@ -16,3 +16,8 @@ learn
 Machine learning for Go.
 
 Work in progress package, APIs are unstable and can quickly change.
+
+Datasets
+--------
+
+Datasets used in tests are from `UCI Machine Learning Repository <http://archive.ics.uci.edu/ml>`_

@@ -123,10 +123,10 @@ func moveCentroids(centroids [][]interface{}, dataMap []Point, data Table) error
 	return nil
 }
 
-// Kmc computes k means clustering.
+// Kmc computes k means clustering (currently broken).
 //
 // Data MUST be normalized before to be passed,
-// Normalize function can be used for that.
+// Normalize function should be used.
 func Kmc(data Table, k int, weights []float64) (result *KmcResult, er error) {
 	// FIXME randomly centroids with zero elements are created which take to higher SSE.
 	nRows, _ := data.Caps()

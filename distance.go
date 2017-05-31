@@ -48,7 +48,6 @@ func elementsDistance(a1, a2 interface{}) (d float64, er error) {
 		if !ok {
 			return -1, typeMismatchErr(a1, a2)
 		}
-		//trace.Println("cat distance", v1.distance(v2))
 		return v1.distance(v2), nil
 	default:
 		return -1, unknownTypeErr(a1)

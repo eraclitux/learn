@@ -140,6 +140,37 @@ func TestBruteForcekNN_mixed(t *testing.T) {
 	}
 }
 
+// Test kdTreekNN using dataset with
+// numerical and categorical features.
+func TestKdtreekNN_mixed(t *testing.T) {
+	trainSet, mu, sigma, catSet := loadTrainSet(t, "adult_train")
+	clf, err := kdTreekNN(trainSet, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Categorize single sample.
+	var testSet MemoryTable = make([][]interface{}, 1)
+	testSet[0] = []interface{}{
+		25.0, "Private", 226802.0, "11th", 7.0, "Never-married", "Machine-op-inspct", "Own-child", "Black", "Male", 0.0, 0.0, 40.0, "United-States", "unlabeled", // FIXME deal with optional labels
+	}
+	_, _, _, err = Normalize(testSet, mu, sigma, catSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	prediction, err := clf.Predict(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := prediction.Row(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "<=50K"
+	if r[0] != expected {
+		t.Errorf("want: %s, got: %s", expected, r[0])
+	}
+}
+
 func TestKdTreekNN(t *testing.T) {
 	trainSet, mu, sigma, catSet := loadTrainSet(t, "iris")
 	clf, err := kdTreekNN(trainSet, 3)

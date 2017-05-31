@@ -8,8 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
-
-	"github.com/eraclitux/trace"
 )
 
 // ConfMatrix stores confusion matrix
@@ -104,8 +102,6 @@ func ConfusionM(expect, predict Table) (ConfMatrix, error) {
 		if err != nil {
 			return ConfMatrix{}, err
 		}
-		trace.Println("expected", row)
-		trace.Println("predicted", pRow)
 		expectedLabel, ok := row[len(row)-1].(*category)
 		if !ok {
 			return ConfMatrix{}, fmt.Errorf("learn: %v is not a category", row[len(row)-1])

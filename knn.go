@@ -97,9 +97,6 @@ func nearestLabelInTree(neighbours []kdtree.Point) string {
 // should be a better choice as avoids tree building overhead.
 // Search in k-d tree is (n*log(m)) but
 // when n > ~20 k-d tree could become O(n*m).
-//
-// BUG(eraclitux): categorical features are used with brute force
-// but not with k-d tree.
 func NewkNN(trainData Table, k int) (Classifier, error) {
 	// FIXME 100 is arbitrary,
 	// algorithm to use
@@ -180,25 +177,24 @@ func (t kSamples) getNearest() string {
 
 type kdTreePoint struct {
 	kdtree.Point
-	features []float64
+	features []interface{}
 	label    string
 }
 
 func makeKDTreePoint(row []interface{}) *kdTreePoint {
 	// TODO optimization: preallocate this somehow?
-	features := []float64{}
+	features := []interface{}{}
 	var label string
 	for i, e := range row {
 		switch v := e.(type) {
 		case float64:
 			features = append(features, v)
-		// BUG categorical features are skipped
 		case *category:
-			// Last element in row
-			// must be the sample's label.
 			if i == len(row)-1 {
 				label = v.label
+				continue
 			}
+			features = append(features, v)
 		}
 	}
 	return &kdTreePoint{
@@ -212,9 +208,18 @@ func (p *kdTreePoint) Dim() int {
 }
 
 func (p *kdTreePoint) GetValue(i int) float64 {
-	return p.features[i]
+	var f float64
+	switch v := p.features[i].(type) {
+	case float64:
+		f = v
+	case *category:
+		f = float64(v.data)
+	}
+	return f
 }
 
+// FIXME use different distances
+// for categorical and numerical features.
 func (p *kdTreePoint) Distance(other kdtree.Point) float64 {
 	var res float64
 	for i := 0; i < p.Dim(); i++ {
@@ -224,6 +229,9 @@ func (p *kdTreePoint) Distance(other kdtree.Point) float64 {
 	return res
 }
 
+// FIXME use different distances
+// for categorical and numerical features?
+// Is this right for categorical features?
 func (p *kdTreePoint) PlaneDistance(val float64, i int) float64 {
 	tmp := p.GetValue(i) - val
 	return tmp * tmp
